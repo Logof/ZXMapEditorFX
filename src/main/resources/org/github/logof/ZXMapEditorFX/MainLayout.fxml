@@ -127,7 +127,7 @@
                     <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="226.0" prefWidth="189.0">
                            <children>
-                              <ListView fx:id="altasListView" prefHeight="227.0" prefWidth="204.0" />
+                              <ListView fx:id="TilesetListView" prefHeight="227.0" prefWidth="204.0" />
                            </children>
                         </AnchorPane>
                     </content>

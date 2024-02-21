@@ -46,9 +46,9 @@ import org.github.logof.ZXMapEditorFX.draw.TilesetCanvas;
 import org.github.logof.ZXMapEditorFX.io.Config;
 import org.github.logof.ZXMapEditorFX.io.XMLElements;
 import org.github.logof.ZXMapEditorFX.layer.TiledMapLayer;
-import org.github.logof.ZXMapEditorFX.property.AltasResourceManager;
 import org.github.logof.ZXMapEditorFX.property.TileProperty;
 import org.github.logof.ZXMapEditorFX.property.TiledMap;
+import org.github.logof.ZXMapEditorFX.property.TilesetResourceManager;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.FileInputStream;
@@ -102,7 +102,7 @@ public class MainLayoutController implements Initializable {
 	@FXML
 	private ScrollPane mapScrollPane;
 	@FXML
-	private ListView<String> altasListView;
+	private ListView<String> TilesetListView;
 	@FXML
 	private RadioMenuItem normalBrushItem;
 	@FXML
@@ -192,7 +192,7 @@ public class MainLayoutController implements Initializable {
 		exportFileChooser = new FileChooser();
 		exportFileChooser.getExtensionFilters().add(new ExtensionFilter("Image files", "*.png"));
 
-		// 贴图集绘制
+		// tileset
 		tilesetCanvas.widthProperty().bind(tilesetCanvasScrollPane.widthProperty());
 		tilesetCanvas.heightProperty().bind(tilesetCanvasScrollPane.heightProperty());
 		tilesetCanvasScrollPane.setContent(tilesetCanvas);
@@ -249,21 +249,21 @@ public class MainLayoutController implements Initializable {
             }
         });
 
-		// Sticker set list
-		altasListView.setItems(imagePathList);
-		altasListView.setCellFactory(param -> new ImageCell());
-		altasListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            AltasResourceManager.AltasResource altasResource = AltasResourceManager.getInstance().getResourceById(newValue);
-            if (altasResource != null && altasResource.getImage() != null) {
-                Image image = altasResource.getImage();
+		// Tileset list
+		TilesetListView.setItems(imagePathList);
+		TilesetListView.setCellFactory(param -> new ImageCell());
+		TilesetListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            TilesetResourceManager.TilesetResource tilesetResource = TilesetResourceManager.getInstance().getResourceById(newValue);
+            if (tilesetResource != null && tilesetResource.getImage() != null) {
+                Image image = tilesetResource.getImage();
                 tilesetCanvas.setImage(image);
-                mapCanvas.setNowAltasResource(altasResource);
+                mapCanvas.setNowTilesetResource(tilesetResource);
             } else {
                 tilesetCanvas.setImage(null);
-                mapCanvas.setNowAltasResource(null);
+                mapCanvas.setNowTilesetResource(null);
             }
         });
-		nowSelectAltasIdProperty.bind(altasListView.getSelectionModel().selectedItemProperty());
+		nowSelectAltasIdProperty.bind(TilesetListView.getSelectionModel().selectedItemProperty());
 
 		// Dialog box
 		newMapDialog = new NewMapDialog();
@@ -341,7 +341,7 @@ public class MainLayoutController implements Initializable {
 	 */
 	private void clearAll() {
 		tiledMapLayerList.clear();
-		AltasResourceManager.getInstance().removeAll();
+		TilesetResourceManager.getInstance().removeAll();
 		imagePathList.clear();
 		tilesetCanvas.setImage(null);
 		layerList.clear();
@@ -389,7 +389,7 @@ public class MainLayoutController implements Initializable {
 					readMessageList.add("Read map settings successfully");
 				} else if (e.getName().equals(XMLElements.ELEMENT_MAP_RESOURCE)) {
 					//Read map resources and add them to resource management
-					AltasResourceManager.getInstance().removeAll();
+					TilesetResourceManager.getInstance().removeAll();
 					for (Iterator<Element> j = e.elementIterator(); j.hasNext();) {
 						Element ej = j.next();
 						String altasID = ej.elementText(XMLElements.ELEMENT_ALTAS_ID);
@@ -405,8 +405,8 @@ public class MainLayoutController implements Initializable {
 						}
 					}
 					// Add to resource list
-					List<AltasResourceManager.AltasResource> alResources = AltasResourceManager.getInstance().getResources();
-					for (AltasResourceManager.AltasResource resource : alResources) {
+					List<TilesetResourceManager.TilesetResource> alResources = TilesetResourceManager.getInstance().getResources();
+					for (TilesetResourceManager.TilesetResource resource : alResources) {
 						imagePathList.add(resource.getAltasId());
 					}
 
@@ -570,14 +570,14 @@ public class MainLayoutController implements Initializable {
 
 		// 写入资源列表
 		Element mapResource = map.addElement(XMLElements.ELEMENT_MAP_RESOURCE);
-		List<AltasResourceManager.AltasResource> resources = AltasResourceManager.getInstance().getResources();
+		List<TilesetResourceManager.TilesetResource> resources = TilesetResourceManager.getInstance().getResources();
 		for (int i = 0; i < resources.size(); i++) {
-			AltasResourceManager.AltasResource altasResource = resources.get(i);
+			TilesetResourceManager.TilesetResource tilesetResource = resources.get(i);
 			Element resource = mapResource.addElement(XMLElements.ELEMENT_RESOURCE);
 			Element resourceId = resource.addElement(XMLElements.ELEMENT_ALTAS_ID);
-			resourceId.setText(altasResource.getAltasId());
+			resourceId.setText(tilesetResource.getAltasId());
 			Element resourcePath = resource.addElement(XMLElements.ELEMENT_ALTAS_PATH);
-			resourcePath.setText(altasResource.getPathStr());
+			resourcePath.setText(tilesetResource.getPathStr());
 		}
 
 		Element mapData = map.addElement(XMLElements.ELEMENT_MAP_DATA);
@@ -630,7 +630,7 @@ public class MainLayoutController implements Initializable {
 	@FXML
 	public void onAddToImageAtlasAction(ActionEvent e) {
 		if (!importImagePathTf.getText().equals("")) {
-			String id = AltasResourceManager.createAltasId();
+			String id = TilesetResourceManager.createAltasId();
 			String path = importImagePathTf.getText();
 			try {
 				addImageAtlas(id, path);
@@ -643,7 +643,7 @@ public class MainLayoutController implements Initializable {
 
 	private void addImageAtlas(String id, String path) throws FileNotFoundException {
 		Image image = new Image(new FileInputStream(path));
-		AltasResourceManager.getInstance().addResource(id, path, image);
+		TilesetResourceManager.getInstance().addResource(id, path, image);
 	}
 
 	@FXML
@@ -714,9 +714,9 @@ public class MainLayoutController implements Initializable {
 
 	@FXML
 	public void onDeleteResourceAction(ActionEvent e) {
-		int index = altasListView.getSelectionModel().getSelectedIndex();
+		int index = TilesetListView.getSelectionModel().getSelectedIndex();
 		imagePathList.remove(index);
-		AltasResourceManager.getInstance().removeResource(index);
+		TilesetResourceManager.getInstance().removeResource(index);
 	}
 
 	@FXML
@@ -732,13 +732,13 @@ public class MainLayoutController implements Initializable {
 			super.updateItem(item, empty);
 			if (item != null && !empty) {
 				ImageView iView;
-				Image image = AltasResourceManager.getInstance().getResourceById(item).getImage();
+				Image image = TilesetResourceManager.getInstance().getResourceById(item).getImage();
 				iView = new ImageView(image);
 				iView.setFitWidth(50);
 				iView.setFitHeight(50);
 				setGraphic(iView);
 			} else {
-				Rectangle rectangle = new Rectangle(altasListView.getWidth(), altasListView.getHeight());
+				Rectangle rectangle = new Rectangle(TilesetListView.getWidth(), TilesetListView.getHeight());
 				rectangle.setFill(Color.WHITE);
 				setGraphic(rectangle);
 			}

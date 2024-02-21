@@ -8,39 +8,39 @@ import java.util.UUID;
  * 贴图集资源管理
  * @author Wing Mei
  */
-public class AltasResourceManager {
-	private final List<AltasResource> altasResources = new ArrayList<>();
-	private static AltasResourceManager altasResourceManager;
+public class TilesetResourceManager {
+	private final List<TilesetResource> tilesetResources = new ArrayList<>();
+	private static TilesetResourceManager tilesetResourceManager;
 
-	public static AltasResourceManager getInstance() {
-		if (altasResourceManager == null) {
-			altasResourceManager = new AltasResourceManager();
+	public static TilesetResourceManager getInstance() {
+		if (tilesetResourceManager == null) {
+			tilesetResourceManager = new TilesetResourceManager();
 		}
-		return altasResourceManager;
+		return tilesetResourceManager;
 	}
 
 	public void addResource(String altasId, String path,Image image) {
-		altasResources.add(new AltasResource(altasId, path, image));
+		tilesetResources.add(new TilesetResource(altasId, path, image));
 	}
 
 	public void removeResource(String altasId) {
-		AltasResource ar = getResourceById(altasId);
+		TilesetResource ar = getResourceById(altasId);
 		if (ar != null) {
-			altasResources.remove(ar);
+			tilesetResources.remove(ar);
 		}
 	}
 	
 	public void removeResource(int index){
-		altasResources.remove(index);
+		tilesetResources.remove(index);
 	}
 	
 	public void removeAll(){
-		altasResources.clear();
+		tilesetResources.clear();
 	}
 
-	public AltasResource getResourceById(String altasId) {
-		AltasResource ar = null;
-		for (AltasResource resource : altasResources) {
+	public TilesetResource getResourceById(String altasId) {
+		TilesetResource ar = null;
+		for (TilesetResource resource : tilesetResources) {
 			if (resource.getAltasId().equals(altasId)) {
 				ar = resource;
 			}
@@ -48,9 +48,9 @@ public class AltasResourceManager {
 		return ar;
 	}
 	
-	public AltasResource getResourceByPath(String path) {
-		AltasResource ar = null;
-		for (AltasResource resource : altasResources) {
+	public TilesetResource getResourceByPath(String path) {
+		TilesetResource ar = null;
+		for (TilesetResource resource : tilesetResources) {
 			if (resource.getPathStr().equals(path)) {
 				ar = resource;
 			}
@@ -63,15 +63,15 @@ public class AltasResourceManager {
 		return UUID.randomUUID().toString();
 	}
 	
-	public List<AltasResource> getResources(){
-		return altasResources;
+	public List<TilesetResource> getResources(){
+		return tilesetResources;
 	}
 
-	public static class AltasResource {
+	public static class TilesetResource {
 		private String altasId;
 		private String pathStr;
         private Image image;
-		public AltasResource(String altasId, String pathStr, Image image) {
+		public TilesetResource(String altasId, String pathStr, Image image) {
 			this.altasId = altasId;
 			this.pathStr = pathStr;
 			this.image = image;

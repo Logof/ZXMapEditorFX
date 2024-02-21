@@ -22,9 +22,9 @@ import org.github.logof.ZXMapEditorFX.dialog.PropertyDialog;
 import org.github.logof.ZXMapEditorFX.dialog.PropertyDialog.OnPropertyDialogActionListener;
 import org.github.logof.ZXMapEditorFX.layer.MapTile;
 import org.github.logof.ZXMapEditorFX.layer.TiledMapLayer;
-import org.github.logof.ZXMapEditorFX.property.AltasResourceManager;
 import org.github.logof.ZXMapEditorFX.property.TileProperty;
 import org.github.logof.ZXMapEditorFX.property.TiledMap;
+import org.github.logof.ZXMapEditorFX.property.TilesetResourceManager;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +33,7 @@ public class MapCanvas extends Canvas {
 
 	@Setter
 	@Getter
-	private AltasResourceManager.AltasResource nowAltasResource;
+	private TilesetResourceManager.TilesetResource nowTilesetResource;
 	@Getter
 	@Setter
 	private List<TiledMapLayer> mapLayerList = new ArrayList<>();
@@ -179,7 +179,7 @@ public class MapCanvas extends Canvas {
 					for (int x = 0; x < tiles[0].length; x++) {
 						MapTile mapTile = new MapTile();
 						mapTile.setAltasIndex(nowChooseProperty.get(0));
-						mapTile.setAltasId(nowAltasResource.getAltasId());
+						mapTile.setAltasId(nowTilesetResource.getAltasId());
 						layer.setMapTile(x, y, mapTile);
 					}
 				}
@@ -195,7 +195,7 @@ public class MapCanvas extends Canvas {
 
 			for (int i = 0; i < nowChooseProperty.getSize(); i++) {
 				int index = nowChooseProperty.get(i);
-				Image image = nowAltasResource.getImage();
+				Image image = nowTilesetResource.getImage();
 				if (index != -1) {
 					int cellX = (int) (image.getWidth() / Constans.TILE_WIDTH);
 					int col = index % cellX;
@@ -206,7 +206,7 @@ public class MapCanvas extends Canvas {
 
 					MapTile mapTile = new MapTile();
 					mapTile.setAltasIndex(index);
-					mapTile.setAltasId(nowAltasResource.getAltasId());
+					mapTile.setAltasId(nowTilesetResource.getAltasId());
 					layer.setMapTile(cols + col - startCol, rows + row - startRow, mapTile);
 
 				}
@@ -265,8 +265,8 @@ public class MapCanvas extends Canvas {
 					for (int y = 0; y < tiles.length; y++) {
 						for (int x = 0; x < tiles[0].length; x++) {
 							if (tiles[y][x] != null) {
-								AltasResourceManager.AltasResource resource = AltasResourceManager.getInstance()
-																								  .getResourceById(
+								TilesetResourceManager.TilesetResource resource = TilesetResourceManager.getInstance()
+																										.getResourceById(
 																										  tiles[y][x].getAltasId());
 								if (resource != null) {
 									Image image = resource.getImage();
@@ -311,7 +311,7 @@ public class MapCanvas extends Canvas {
 			if (nowChooseProperty.getSize() != 0) {
 				for (int i = 0; i < nowChooseProperty.getSize(); i++) {
 					int index = nowChooseProperty.get(i);
-					Image image = nowAltasResource.getImage();
+					Image image = nowTilesetResource.getImage();
 					if (index != -1) {
 						int cellX = (int) (image.getWidth() / Constans.TILE_WIDTH);
 						int col = index % cellX;
@@ -334,7 +334,7 @@ public class MapCanvas extends Canvas {
 			graphicsContext.setGlobalAlpha(0.8f);
 			for (int i = 0; i < nowChooseProperty.getSize(); i++) {
 				int index = nowChooseProperty.get(i);
-				Image image = nowAltasResource.getImage();
+				Image image = nowTilesetResource.getImage();
 				if (index != -1) {
 					int cellX = (int) (image.getWidth() / Constans.TILE_WIDTH);
 					int col = index % cellX;
