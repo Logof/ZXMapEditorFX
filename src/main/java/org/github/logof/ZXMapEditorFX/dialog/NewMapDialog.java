@@ -9,6 +9,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import lombok.Getter;
+import lombok.Setter;
+import org.github.logof.ZXMapEditorFX.Constans;
 import org.github.logof.ZXMapEditorFX.property.TiledMap;
 import java.io.IOException;
 import java.net.URL;
@@ -16,9 +19,17 @@ import java.util.ResourceBundle;
 
 public class NewMapDialog extends AnchorPane implements Initializable {
 	@FXML
-	private TextField tileWidthTf, tileHeightTf, mapWidthTf, mapHeightTf;
+	private TextField tileWidthTf;
+	@FXML
+	private TextField tileHeightTf;
+	@FXML
+	private TextField mapWidthTf;
+	@FXML
+	private TextField mapHeightTf;
 
 	private Stage newAlertDialog;
+	@Setter
+	@Getter
 	private OnNewMapDialogActionListener onNewMapDialogActionListener;
 
 	public NewMapDialog() {
@@ -68,24 +79,19 @@ public class NewMapDialog extends AnchorPane implements Initializable {
 
 	@FXML
 	private void onNewMapAction(ActionEvent event) {
-		String tileWidthStr = tileWidthTf.getText();
-		String tileHeightStr = tileHeightTf.getText();
 		String mapWidthStr = mapWidthTf.getText();
 		String mapHeightStr = mapHeightTf.getText();
-		if (!tileWidthStr.trim().equals("") && !tileHeightStr.trim().equals("") && !mapWidthStr.trim().equals("")
-				&& !mapHeightStr.trim().equals("")) {
+		if (!mapWidthStr.isBlank() && !mapHeightStr.isBlank()) {
 			try {
-				int tileWidth = Integer.parseInt(tileWidthStr);
-				int tileHeight = Integer.parseInt(tileHeightStr);
-				int mapWidth = Integer.parseInt(mapWidthStr);
-				int mapHeight = Integer.parseInt(mapHeightStr);
-				TiledMap.getInstance().setMapProperty(tileWidth, tileHeight, mapWidth, mapHeight);
+				int mapWidth = Integer.parseInt(mapWidthStr) * Constans.SCREEN_TILES_ON_WIDTH;
+				int mapHeight = Integer.parseInt(mapHeightStr) * Constans.SCREEN_TILES_ON_HEIGHT;
+				TiledMap.getInstance().setMapProperty(mapWidth, mapHeight);
 				if (onNewMapDialogActionListener != null) {
 					onNewMapDialogActionListener.onNewMapOkAction();
 				}
 				hideAlertDialog();
 			} catch (NumberFormatException e) {
-                //e.printStackTrace();
+                e.printStackTrace();
 			}
 		}
 	}
@@ -96,14 +102,6 @@ public class NewMapDialog extends AnchorPane implements Initializable {
 			onNewMapDialogActionListener.onNewMapCancelAction();
 		}
 		hideAlertDialog();
-	}
-
-	public OnNewMapDialogActionListener getOnNewMapDialogActionListener() {
-		return onNewMapDialogActionListener;
-	}
-
-	public void setOnNewMapDialogActionListener(OnNewMapDialogActionListener onNewMapDialogActionListener) {
-		this.onNewMapDialogActionListener = onNewMapDialogActionListener;
 	}
 
 	public interface OnNewMapDialogActionListener {

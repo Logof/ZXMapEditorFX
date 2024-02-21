@@ -175,7 +175,7 @@ public class MainLayoutController implements Initializable {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		TiledMap.getInstance().setMapProperty(64, 64, 13, 7);
+		TiledMap.getInstance().setMapProperty(13, 7);
 
 		// file selector
 		fileChooser = new FileChooser();
@@ -389,7 +389,7 @@ public class MainLayoutController implements Initializable {
 					int mapHeight = Integer.parseInt(e.elementText(XMLElements.ELEMENT_MAP_HEIGHT));
 					int tileWidth = Integer.parseInt(e.elementText(XMLElements.ELEMENT_TILE_WIDTH));
 					int tileHeight = Integer.parseInt(e.elementText(XMLElements.ELEMENT_TILE_HEIGHT));
-					TiledMap.getInstance().setMapProperty(tileWidth, tileHeight, mapWidth, mapHeight);
+					TiledMap.getInstance().setMapProperty(mapWidth, mapHeight);
 					// Set map canvas size
 					mapCanvas.setWidth(tileWidth * mapWidth);
 					mapCanvas.setHeight(tileHeight * mapHeight);
@@ -575,10 +575,10 @@ public class MainLayoutController implements Initializable {
 		mapHeight.setText(TiledMap.getInstance().getMapHeight() + "");
 
 		Element tileWidth = mapSetting.addElement(XMLElements.ELEMENT_TILE_WIDTH);
-		tileWidth.setText(TiledMap.getInstance().getTileWidth() + "");
+		tileWidth.setText(String.valueOf(Constans.TILE_WIDTH));
 
 		Element tileHeight = mapSetting.addElement(XMLElements.ELEMENT_TILE_HEIGHT);
-		tileHeight.setText(TiledMap.getInstance().getTileHeight() + "");
+		tileHeight.setText(String.valueOf(Constans.TILE_HEIGHT));
 
 		// 写入资源列表
 		Element mapResource = map.addElement(XMLElements.ELEMENT_MAP_RESOURCE);

@@ -10,23 +10,26 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
-import org.github.logof.ZXMapEditorFX.property.TiledMap;
+import lombok.Getter;
+import org.github.logof.ZXMapEditorFX.Constans;
 
 public class AltasCanvas extends Canvas {
 	private GraphicsContext gContext2D;
 	private double tileWidth, tileHeight;
-	private SimpleIntegerProperty cellXCountProperty = new SimpleIntegerProperty(0);
-	private SimpleIntegerProperty cellYCountProperty = new SimpleIntegerProperty(0);
+	private final SimpleIntegerProperty cellXCountProperty = new SimpleIntegerProperty(0);
+	private final SimpleIntegerProperty cellYCountProperty = new SimpleIntegerProperty(0);
+	@Getter
 	private Image image;
-	// private SimpleIntegerProperty nowChooseProperty = new
-	// SimpleIntegerProperty(-1);
-	private SimpleListProperty<Integer> nowChooseProperty = new SimpleListProperty<>();
-	private ObservableList<Integer> chooseList = FXCollections.observableArrayList();
-	private SimpleBooleanProperty showGridProperty = new SimpleBooleanProperty(true);
-	private SimpleIntegerProperty brushTypeProperty = new SimpleIntegerProperty(0);
 
-	private double startX, startY;
-	private double mouseX, mouseY;
+	private final SimpleListProperty<Integer> nowChooseProperty = new SimpleListProperty<>();
+	private final ObservableList<Integer> chooseList = FXCollections.observableArrayList();
+	private final SimpleBooleanProperty showGridProperty = new SimpleBooleanProperty(true);
+	private final SimpleIntegerProperty brushTypeProperty = new SimpleIntegerProperty(0);
+
+	private double startX;
+	private double startY;
+	private double mouseX;
+	private double mouseY;
 	private boolean isDrag = false;
 
 	public AltasCanvas(double width, double height) {
@@ -58,25 +61,23 @@ public class AltasCanvas extends Canvas {
 			}
 		});
 		setOnMouseDragged(e -> {
-			switch (brushTypeProperty.get()) {
-			case 0:
-				mouseX = e.getX();
-				mouseY = e.getY();
-				isDrag = true;
-				int minX = (int) Math.min(mouseX, startX);
-				int maxX = (int) Math.max(mouseX, startX);
-				int minY = (int) Math.min(mouseY, startY);
-				int maxY = (int) Math.max(mouseY, startY);
-				chooseList.clear();
-				for (int y = (int) (minY / tileHeight); y < (int) (maxY / tileHeight) + 1; y++) {
-					for (int x = (int) (minX / tileWidth); x < (int) (maxX / tileWidth) + 1; x++) {
-						int index = y * cellXCountProperty.get() + x;
-						if (!chooseList.contains(index))
-							chooseList.add(index);
-					}
-				}
-				break;
-			}
+            if (brushTypeProperty.get() == 0) {
+                mouseX = e.getX();
+                mouseY = e.getY();
+                isDrag = true;
+                int minX = (int) Math.min(mouseX, startX);
+                int maxX = (int) Math.max(mouseX, startX);
+                int minY = (int) Math.min(mouseY, startY);
+                int maxY = (int) Math.max(mouseY, startY);
+                chooseList.clear();
+                for (int y = (int) (minY / tileHeight); y < (int) (maxY / tileHeight) + 1; y++) {
+                    for (int x = (int) (minX / tileWidth); x < (int) (maxX / tileWidth) + 1; x++) {
+                        int index = y * cellXCountProperty.get() + x;
+                        if (!chooseList.contains(index))
+                            chooseList.add(index);
+                    }
+                }
+            }
 		});
 		setOnMouseDragExited(e -> {
 
@@ -98,11 +99,11 @@ public class AltasCanvas extends Canvas {
 		gContext2D.setFill(Color.WHITE);
 		gContext2D.clearRect(0, 0, getWidth(), getHeight());
 		gContext2D.setStroke(Color.BLACK);
-		tileWidth = TiledMap.getInstance().getTileWidth();
-		tileHeight = TiledMap.getInstance().getTileHeight();
+		tileWidth = Constans.TILE_WIDTH;
+		tileHeight = Constans.TILE_HEIGHT;
 		if (image != null) {
 			gContext2D.drawImage(image, 0, 0);
-			if (getNowChoose() != null && getNowChoose().size() > 0) {
+			if (getNowChoose() != null && !getNowChoose().isEmpty()) {
 				gContext2D.setGlobalAlpha(0.5f);
 				gContext2D.setFill(Color.YELLOW);
 				for (Integer index : getNowChoose()) {
@@ -127,10 +128,6 @@ public class AltasCanvas extends Canvas {
 			}
 		}
 		gContext2D.restore();
-	}
-
-	public Image getImage() {
-		return image;
 	}
 
 	public void setImage(Image image) {
