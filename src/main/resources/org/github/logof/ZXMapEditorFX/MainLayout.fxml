@@ -24,7 +24,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<BorderPane prefHeight="640.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.github.logof.ZXMapEditorFX.MainLayoutController">
+<BorderPane prefHeight="640.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.github.logof.ZXMapEditorFX.MainLayoutController">
    <left>
       <VBox fillWidth="false" maxWidth="200.0" prefHeight="660.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
@@ -134,7 +134,7 @@
                   </TitledPane>
                   <TitledPane animated="false" collapsible="false" prefHeight="375.0" prefWidth="205.0" text="Unit picture collection">
                      <content>
-                        <ScrollPane fx:id="altasCanvasScrollPane" prefHeight="375.0" prefWidth="203.0" />
+                        <ScrollPane fx:id="tilesetCanvasScrollPane" prefHeight="375.0" prefWidth="203.0" />
                      </content>
                      <VBox.margin>
                         <Insets />
@@ -234,7 +234,7 @@
                               <Insets left="30.0" />
                            </padding>
                         </Label>
-                        <Slider fx:id="scaleSlider" max="2.0" value="1.0" />
+                        <Slider fx:id="scaleSlider" blockIncrement="4.0" majorTickUnit="0.5" max="2.0" min="0.5" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0" />
                         <Label fx:id="mScaleLabel" text="1.0">
                            <HBox.margin>
                               <Insets left="5.0" />

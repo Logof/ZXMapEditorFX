@@ -8,7 +8,7 @@ public class TiledMapLayer {
 	private final SimpleStringProperty layerName = new SimpleStringProperty();
     private boolean isVisible = true;
     private boolean isCollider = false;
-    private double alpha = 1.0d;
+
 	public TiledMapLayer(int width, int height) {
 		mapTiles = new MapTile[height][width];
 		for(int i = 0;i < height;i ++){
@@ -83,14 +83,6 @@ public class TiledMapLayer {
 
 	public void setVisible(boolean isVisible) {
 		this.isVisible = isVisible;
-	}
-
-	public double getAlpha() {
-		return alpha;
-	}
-
-	public void setAlpha(double alpha) {
-		this.alpha = alpha;
 	}
 
 	public boolean isCollider() {

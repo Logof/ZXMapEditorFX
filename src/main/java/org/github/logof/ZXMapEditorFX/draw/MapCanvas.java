@@ -49,12 +49,12 @@ public class MapCanvas extends Canvas {
 	private int mouseRows = 0;
 	private int nowPropertyCols = 0, nowPropertyRows = 0;
 	private double mouseX, mouseY;
-	private boolean isDrawAltasList = true;
+	private boolean isDrawTilesetList = true;
 	private static final int rectIndex = -100;
 
 	private final PropertyDialog mPropertyDialog = new PropertyDialog();
 
-	public MapCanvas(double width, double height) {
+	public MapCanvas(int width, int height) {
 		super(width, height);
 		init();
 	}
@@ -103,7 +103,7 @@ public class MapCanvas extends Canvas {
 				// 获取指定行列的属性
 				TileProperty nowProperty = TiledMap.getInstance().getProperty(nowPropertyCols, nowPropertyRows);
 				propertyDatas.clear();
-				mTitledPane.setText("属性列表:" + nowPropertyCols + "," + nowPropertyRows);
+				mTitledPane.setText("Property list:" + nowPropertyCols + "," + nowPropertyRows);
 				// 如果没有则创建一个
 				if (nowProperty != null) {
                     for (String key : nowProperty.getValueMap().keySet()) {
@@ -130,9 +130,9 @@ public class MapCanvas extends Canvas {
 		});
 		setOnMouseDragged(e -> {
 			fillTheMap(e);
-			isDrawAltasList = false;
+			isDrawTilesetList = false;
 		});
-		setOnMouseReleased(e -> isDrawAltasList = true);
+		setOnMouseReleased(e -> isDrawTilesetList = true);
 
 		setOnMouseMoved(e -> {
 			mouseCols = (int) (e.getX() / (Constans.TILE_WIDTH * getScale()));
@@ -141,9 +141,9 @@ public class MapCanvas extends Canvas {
 			mouseY = e.getY();
 		});
 
-		setOnMouseEntered(e -> isDrawAltasList = true);
+		setOnMouseEntered(e -> isDrawTilesetList = true);
 
-		setOnMouseExited(e -> isDrawAltasList = false);
+		setOnMouseExited(e -> isDrawTilesetList = false);
 
 		setWidth(TiledMap.getInstance().getRealTileMapWidth());
 		setHeight(TiledMap.getInstance().getRealTileMapHeight());
@@ -249,43 +249,47 @@ public class MapCanvas extends Canvas {
 
 		TiledMap tiledMap = TiledMap.getInstance();
 
-		// 绘制多图层地图
+		// Draw multi-layer maps
 		int length = mapLayerList.size();
-		if (length > 0) {
-			for (int i = length - 1; i >= 0; i--) {
-				TiledMapLayer mapLayer = mapLayerList.get(i);
-				if (mapLayer.isVisible()) {
-					MapTile[][] tiles = mapLayer.getMapTiles();
-					graphicsContext.setGlobalAlpha(mapLayer.getAlpha());
-					if (tiles != null) {
-						for (int y = 0; y < tiles.length; y++) {
-							for (int x = 0; x < tiles[0].length; x++) {
-								if (tiles[y][x] != null) {
-									AltasResourceManager.AltasResource resource = AltasResourceManager.getInstance().getResourceById(
-											tiles[y][x].getAltasId());
-									if (resource != null) {
-										Image image = resource.getImage();
-										int index = tiles[y][x].getAltasIndex();
-										if (index != -1) {
-											int cellX = (int) (image.getWidth() / Constans.TILE_WIDTH);
-											int col = index % cellX;
-											int row = index / cellX;
-											graphicsContext.drawImage(image, col * Constans.TILE_WIDTH, row * Constans.TILE_HEIGHT, Constans.TILE_WIDTH,
-													Constans.TILE_HEIGHT, x * Constans.TILE_WIDTH * getScale(),
-													y * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH * getScale(), Constans.TILE_HEIGHT
-															* getScale());
-										}
-									} else {
-										int index = tiles[y][x].getAltasIndex();
-										if (index == rectIndex) {
-											graphicsContext.save();
-											graphicsContext.setGlobalAlpha(0.6f);
-											graphicsContext.setFill(Color.RED);
-											graphicsContext.fillRect(x * Constans.TILE_WIDTH * getScale(),
-													y * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH * getScale(), Constans.TILE_HEIGHT
-															* getScale());
-											graphicsContext.restore();
-										}
+		if (length == 0) {
+			return;
+			// Возможно нужен graphicsContext.restore();
+		}
+
+		for (int layerId = length - 1; layerId >= 0; layerId--) {
+			TiledMapLayer mapLayer = mapLayerList.get(layerId);
+
+			if (mapLayer.isVisible()) {
+				MapTile[][] tiles = mapLayer.getMapTiles();
+				if (tiles != null) {
+					for (int y = 0; y < tiles.length; y++) {
+						for (int x = 0; x < tiles[0].length; x++) {
+							if (tiles[y][x] != null) {
+								AltasResourceManager.AltasResource resource = AltasResourceManager.getInstance()
+																								  .getResourceById(
+																										  tiles[y][x].getAltasId());
+								if (resource != null) {
+									Image image = resource.getImage();
+									int index = tiles[y][x].getAltasIndex();
+									if (index != -1) {
+										int cellX = (int) (image.getWidth() / Constans.TILE_WIDTH);
+										int col = index % cellX;
+										int row = index / cellX;
+										graphicsContext.drawImage(image, col * Constans.TILE_WIDTH, row * Constans.TILE_HEIGHT, Constans.TILE_WIDTH,
+												Constans.TILE_HEIGHT, x * Constans.TILE_WIDTH * getScale(),
+												y * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH * getScale(), Constans.TILE_HEIGHT
+														* getScale());
+									}
+								} else {
+									int index = tiles[y][x].getAltasIndex();
+									if (index == rectIndex) {
+										graphicsContext.save();
+										graphicsContext.setGlobalAlpha(0.6f);
+										graphicsContext.setFill(Color.RED);
+										graphicsContext.fillRect(x * Constans.TILE_WIDTH * getScale(),
+												y * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH * getScale(), Constans.TILE_HEIGHT
+														* getScale());
+										graphicsContext.restore();
 									}
 								}
 							}
@@ -293,65 +297,18 @@ public class MapCanvas extends Canvas {
 					}
 				}
 			}
-			if (isShowGrid()) {
-				// Draw grid
-				graphicsContext.setGlobalAlpha(1.0f);
-				graphicsContext.setLineWidth(1.0f);
+		}
 
-				for (int i = 0; i <= tiledMap.getMapWidth(); i++) {
-					if (i % Constans.SCREEN_TILES_ON_WIDTH == 0) {
-						graphicsContext.setStroke(Color.RED);
-					} else {
-						graphicsContext.setStroke(Color.BLACK);
-					}
-					graphicsContext.strokeLine(
-							i * Constans.TILE_WIDTH * getScale(),
-							0,
-							i * Constans.TILE_WIDTH * getScale(),
-							tiledMap.getRealTileMapHeight() * getScale());
-				}
-				for (int j = 0; j <= tiledMap.getMapHeight(); j++) {
-					if (j % Constans.SCREEN_TILES_ON_HEIGHT == 0) {
-						graphicsContext.setStroke(Color.RED);
-					} else {
-						graphicsContext.setStroke(Color.BLACK);
-					}
-					graphicsContext.strokeLine(
-							0,
-							j * Constans.TILE_HEIGHT * getScale(),
-							tiledMap.getRealTileMapWidth() * getScale(),
-							j * Constans.TILE_HEIGHT * getScale());
-				}
-			}
-			if (isDrawAltasList) {
-				int cols = (int) (mouseX / (Constans.TILE_WIDTH * getScale()));
-				int rows = (int) (mouseY / (Constans.TILE_HEIGHT * getScale()));
-				// 绘制受影响的网格
-				graphicsContext.setGlobalAlpha(0.6f);
-				if (nowChooseProperty.getSize() != 0) {
-					for (int i = 0; i < nowChooseProperty.getSize(); i++) {
-						int index = nowChooseProperty.get(i);
-						Image image = nowAltasResource.getImage();
-						if (index != -1) {
-							int cellX = (int) (image.getWidth() / Constans.TILE_WIDTH);
-							int col = index % cellX;
-							int row = index / cellX;
+		if (isShowGrid()) {
+			drawGrid(tiledMap);
+		}
 
-							int startCol = nowChooseProperty.get(0) % cellX;
-							int startRow = nowChooseProperty.get(0) / cellX;
-							graphicsContext.fillRect((cols + col - startCol) * Constans.TILE_WIDTH * getScale(),
-									(rows + row - startRow) * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH * getScale(),
-									Constans.TILE_HEIGHT * getScale());
-						}
-					}
-				} else {
-					if (brushTypeProperty.get() == 3) {
-						graphicsContext.fillRect(cols * Constans.TILE_WIDTH * getScale(), rows * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH
-								* getScale(), Constans.TILE_HEIGHT * getScale());
-					}
-				}
-				// 绘制要填充的贴图
-				graphicsContext.setGlobalAlpha(0.8f);
+		if (isDrawTilesetList) {
+			int cols = (int) (mouseX / (Constans.TILE_WIDTH * getScale()));
+			int rows = (int) (mouseY / (Constans.TILE_HEIGHT * getScale()));
+			// Draw the affected mesh
+			graphicsContext.setGlobalAlpha(0.6f);
+			if (nowChooseProperty.getSize() != 0) {
 				for (int i = 0; i < nowChooseProperty.getSize(); i++) {
 					int index = nowChooseProperty.get(i);
 					Image image = nowAltasResource.getImage();
@@ -362,31 +319,88 @@ public class MapCanvas extends Canvas {
 
 						int startCol = nowChooseProperty.get(0) % cellX;
 						int startRow = nowChooseProperty.get(0) / cellX;
-
-						graphicsContext.drawImage(image, col * Constans.TILE_WIDTH, row * Constans.TILE_HEIGHT, Constans.TILE_WIDTH, Constans.TILE_HEIGHT, (cols
-								+ col - startCol)
-								* Constans.TILE_WIDTH * getScale(), (rows + row - startRow) * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH
-								* getScale(), Constans.TILE_HEIGHT * getScale());
+						graphicsContext.fillRect((cols + col - startCol) * Constans.TILE_WIDTH * getScale(),
+								(rows + row - startRow) * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH * getScale(),
+								Constans.TILE_HEIGHT * getScale());
 					}
 				}
+			} else {
+				if (brushTypeProperty.get() == 3) {
+					graphicsContext.fillRect(cols * Constans.TILE_WIDTH * getScale(), rows * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH
+							* getScale(), Constans.TILE_HEIGHT * getScale());
+				}
 			}
+			// 绘制要填充的贴图
+			graphicsContext.setGlobalAlpha(0.8f);
+			for (int i = 0; i < nowChooseProperty.getSize(); i++) {
+				int index = nowChooseProperty.get(i);
+				Image image = nowAltasResource.getImage();
+				if (index != -1) {
+					int cellX = (int) (image.getWidth() / Constans.TILE_WIDTH);
+					int col = index % cellX;
+					int row = index / cellX;
 
-			// 绘制属性网格
-			if (isShowProperty()) {
-				ArrayList<TileProperty> propertyList = tiledMap.getPropertyList();
-				if (!propertyList.isEmpty()) {
-					graphicsContext.setFill(Color.PURPLE);
-					graphicsContext.setGlobalAlpha(0.5f);
-					for (TileProperty tileProperty : propertyList) {
-						int rows = tileProperty.getRow();
-						int cols = tileProperty.getCol();
-						graphicsContext.fillRect(cols * Constans.TILE_WIDTH * getScale(), rows * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH
-								* getScale(), Constans.TILE_HEIGHT * getScale());
-					}
+					int startCol = nowChooseProperty.get(0) % cellX;
+					int startRow = nowChooseProperty.get(0) / cellX;
+
+					graphicsContext.drawImage(image, col * Constans.TILE_WIDTH, row * Constans.TILE_HEIGHT, Constans.TILE_WIDTH, Constans.TILE_HEIGHT, (cols
+							+ col - startCol)
+							* Constans.TILE_WIDTH * getScale(), (rows + row - startRow) * Constans.TILE_HEIGHT * getScale(), Constans.TILE_WIDTH
+							* getScale(), Constans.TILE_HEIGHT * getScale());
+				}
+			}
+		}
+
+		// Draw attribute grid
+		// TODO типы объектов выводить в разные цвета
+		if (isShowProperty()) {
+			ArrayList<TileProperty> propertyList = tiledMap.getPropertyList();
+			if (!propertyList.isEmpty()) {
+				graphicsContext.setFill(Color.PURPLE);
+				graphicsContext.setGlobalAlpha(0.5f);
+				for (TileProperty tileProperty : propertyList) {
+					int rows = tileProperty.getRow();
+					int cols = tileProperty.getCol();
+					graphicsContext.fillRect(
+							cols * Constans.TILE_WIDTH * getScale(),
+							rows * Constans.TILE_HEIGHT * getScale(),
+							Constans.TILE_WIDTH * getScale(),
+							Constans.TILE_HEIGHT * getScale());
 				}
 			}
 		}
 		graphicsContext.restore();
+	}
+
+	private void drawGrid(TiledMap tiledMap) {
+		graphicsContext.setGlobalAlpha(1.0f);
+		graphicsContext.setLineWidth(1.0f);
+
+		for (int x = 0; x <= tiledMap.getMapWidth(); x++) {
+			if (x % Constans.SCREEN_TILES_ON_WIDTH == 0) {
+				graphicsContext.setStroke(Color.BLACK);
+			} else {
+				graphicsContext.setStroke(Color.DARKGREY);
+			}
+			graphicsContext.strokeLine(
+					x * Constans.TILE_WIDTH * getScale(),
+					0,
+					x * Constans.TILE_WIDTH * getScale(),
+					tiledMap.getRealTileMapHeight() * getScale());
+		}
+
+		for (int y = 0; y <= tiledMap.getMapHeight(); y++) {
+			if (y % Constans.SCREEN_TILES_ON_HEIGHT == 0) {
+				graphicsContext.setStroke(Color.BLACK);
+			} else {
+				graphicsContext.setStroke(Color.DARKGREY);
+			}
+			graphicsContext.strokeLine(
+					0,
+					y * Constans.TILE_HEIGHT * getScale(),
+					tiledMap.getRealTileMapWidth() * getScale(),
+					y * Constans.TILE_HEIGHT * getScale());
+		}
 	}
 
 	public ObservableList<Integer> getNowChoose() {

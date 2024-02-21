@@ -41,8 +41,8 @@ import org.dom4j.io.XMLWriter;
 import org.github.logof.ZXMapEditorFX.dialog.AboutDialog;
 import org.github.logof.ZXMapEditorFX.dialog.AlertDialog;
 import org.github.logof.ZXMapEditorFX.dialog.NewMapDialog;
-import org.github.logof.ZXMapEditorFX.draw.AltasCanvas;
 import org.github.logof.ZXMapEditorFX.draw.MapCanvas;
+import org.github.logof.ZXMapEditorFX.draw.TilesetCanvas;
 import org.github.logof.ZXMapEditorFX.io.Config;
 import org.github.logof.ZXMapEditorFX.io.XMLElements;
 import org.github.logof.ZXMapEditorFX.layer.TiledMapLayer;
@@ -98,7 +98,7 @@ public class MainLayoutController implements Initializable {
 	private Label nowMousePositionLabel;
 
 	@FXML
-	private ScrollPane altasCanvasScrollPane;
+	private ScrollPane tilesetCanvasScrollPane;
 	@FXML
 	private ScrollPane mapScrollPane;
 	@FXML
@@ -125,7 +125,7 @@ public class MainLayoutController implements Initializable {
 	private Image nowBrowserImage;
 	private final List<TiledMapLayer> tiledMapLayerList = new ArrayList<>();
 
-	private AltasCanvas altasCanvas;
+	private TilesetCanvas tilesetCanvas;
 	private MapCanvas mapCanvas;
 	private final SimpleStringProperty nowSelectAltasIdProperty = new SimpleStringProperty();
 	private final SimpleIntegerProperty brushTypeProperty = new SimpleIntegerProperty();
@@ -153,8 +153,8 @@ public class MainLayoutController implements Initializable {
 		public void run() {
 			while (isRunning) {
 				Platform.runLater(() -> {
-                    if (altasCanvas != null) {
-                        altasCanvas.draw();
+                    if (tilesetCanvas != null) {
+                        tilesetCanvas.draw();
                     }
                     if (mapCanvas != null) {
                         mapCanvas.draw();
@@ -180,8 +180,8 @@ public class MainLayoutController implements Initializable {
 		// file selector
 		fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().add(new ExtensionFilter("Image files", "*.jpg", "*.png", "*.bmp"));
-		altasCanvas = new AltasCanvas(altasCanvasScrollPane.getWidth(), altasCanvasScrollPane.getHeight());
-		altasCanvas.BrushTypeProperty().bind(brushTypeProperty);
+		tilesetCanvas = new TilesetCanvas(tilesetCanvasScrollPane.getWidth(), tilesetCanvasScrollPane.getHeight());
+		tilesetCanvas.BrushTypeProperty().bind(brushTypeProperty);
 		// Open map
 		openMapChooser = new FileChooser();
 		openMapChooser.getExtensionFilters().add(new ExtensionFilter("Map file", "*.xml"));
@@ -193,16 +193,16 @@ public class MainLayoutController implements Initializable {
 		exportFileChooser.getExtensionFilters().add(new ExtensionFilter("Image files", "*.png"));
 
 		// 贴图集绘制
-		altasCanvas.widthProperty().bind(altasCanvasScrollPane.widthProperty());
-		altasCanvas.heightProperty().bind(altasCanvasScrollPane.heightProperty());
-		altasCanvasScrollPane.setContent(altasCanvas);
+		tilesetCanvas.widthProperty().bind(tilesetCanvasScrollPane.widthProperty());
+		tilesetCanvas.heightProperty().bind(tilesetCanvasScrollPane.heightProperty());
+		tilesetCanvasScrollPane.setContent(tilesetCanvas);
 
 		// mapping
 		mapCanvas = new MapCanvas(TiledMap.getInstance().getMapWidth(), TiledMap.getInstance().getMapHeight());
 		mapCanvas.NowSelectLayerProperty().bind(layerListView.getSelectionModel().selectedIndexProperty());
 		mapCanvas.BrushTypeProperty().bind(brushTypeProperty);
 		mapCanvas.setMapLayerList(tiledMapLayerList);
-		mapCanvas.NowChooseProperty().bind(altasCanvas.NowChooseProperty());
+		mapCanvas.NowChooseProperty().bind(tilesetCanvas.NowChooseProperty());
 		// mapCanvas.ScaleProperty().bind(scaleSlider.valueProperty());
 		scaleSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             String value = newValue.toString().subSequence(0, 3).toString();
@@ -228,17 +228,8 @@ public class MainLayoutController implements Initializable {
             int index = newValue.intValue();
             if (index >= 0 && index < tiledMapLayerList.size()) {
                 TiledMapLayer mapLayer = tiledMapLayerList.get(index);
-                layerAlphaSlider.setValue(mapLayer.getAlpha());
                 layerShowCheck.setSelected(mapLayer.isVisible());
                 layerColliderCheck.setSelected(mapLayer.isCollider());
-            }
-        });
-		// Modification of layer alpha value
-		layerAlphaSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            int index = layerListView.getSelectionModel().selectedIndexProperty().get();
-            if (index >= 0 && index < tiledMapLayerList.size()) {
-                TiledMapLayer mapLayer = tiledMapLayerList.get(index);
-                mapLayer.setAlpha(newValue.doubleValue());
             }
         });
 
@@ -265,10 +256,10 @@ public class MainLayoutController implements Initializable {
             AltasResourceManager.AltasResource altasResource = AltasResourceManager.getInstance().getResourceById(newValue);
             if (altasResource != null && altasResource.getImage() != null) {
                 Image image = altasResource.getImage();
-                altasCanvas.setImage(image);
+                tilesetCanvas.setImage(image);
                 mapCanvas.setNowAltasResource(altasResource);
             } else {
-                altasCanvas.setImage(null);
+                tilesetCanvas.setImage(null);
                 mapCanvas.setNowAltasResource(null);
             }
         });
@@ -303,7 +294,7 @@ public class MainLayoutController implements Initializable {
 		rectItem.setToggleGroup(tGroup);
 		normalBrushItem.setSelected(true);
 		mapCanvas.ShowGridProperty().bind(showMapGridItem.selectedProperty());
-		altasCanvas.ShowGridProperty().bind(showAltasGridItem.selectedProperty());
+		tilesetCanvas.ShowGridProperty().bind(showAltasGridItem.selectedProperty());
 		mapCanvas.ShowProProperty().bind(showPropertyGridItem.selectedProperty());
 		// Read recently opened files
 		initRecentFiles();
@@ -352,7 +343,7 @@ public class MainLayoutController implements Initializable {
 		tiledMapLayerList.clear();
 		AltasResourceManager.getInstance().removeAll();
 		imagePathList.clear();
-		altasCanvas.setImage(null);
+		tilesetCanvas.setImage(null);
 		layerList.clear();
 		readMessageList.clear();
 		// Clear attribute list when reading map
@@ -426,14 +417,11 @@ public class MainLayoutController implements Initializable {
 						Element ej = j.next();
 						String layerName = ej.attributeValue(XMLElements.ATTRIBUTE_NAME);
 						String visibleStr = ej.attributeValue(XMLElements.ATTRIBUTE_VISIBLE);
-						String alphaStr = ej.attributeValue(XMLElements.ATTRIBUTE_ALPHA);
 						String colliderStr = ej.attributeValue(XMLElements.ATTRIBUTE_COLLIDER);
 						String mapData = ej.getText();
 						tiledMapLayer.setLayerName(layerName);
 						if (visibleStr != null)
 							tiledMapLayer.setVisible(Boolean.parseBoolean(visibleStr));
-						if (alphaStr != null)
-							tiledMapLayer.setAlpha(Double.parseDouble(alphaStr));
 						if (colliderStr != null)
 							tiledMapLayer.setCollider(Boolean.parseBoolean(colliderStr));
 						tiledMapLayer.ConvertFromString(mapData);
@@ -598,7 +586,6 @@ public class MainLayoutController implements Initializable {
 			Element layer = mapData.addElement(XMLElements.ELEMENT_MAP_LAYER);
 			layer.addAttribute(XMLElements.ATTRIBUTE_NAME, mapLayer.getLayerName());
 			layer.addAttribute(XMLElements.ATTRIBUTE_VISIBLE, String.valueOf(mapLayer.isVisible()));
-			layer.addAttribute(XMLElements.ATTRIBUTE_ALPHA, mapLayer.getAlpha() + "");
 			layer.addAttribute(XMLElements.ATTRIBUTE_COLLIDER, String.valueOf(mapLayer.isCollider()));
 			layer.setText(mapLayer.toString());
 		}
