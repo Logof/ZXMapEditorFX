@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="162.0" prefWidth="300.0" type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <TextArea fx:id="messageLabel" editable="false" prefHeight="131.0" prefWidth="300.0" />
+      <Button layoutX="119.0" layoutY="137.0" mnemonicParsing="false" onAction="#onAlertOkAction" prefHeight="23.0" prefWidth="63.0" text="Ok" />
+   </children>
+</fx:root>
