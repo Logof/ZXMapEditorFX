@@ -2,7 +2,6 @@ package org.github.logof.ZXMapEditorFX;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -61,150 +60,138 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 public class MainLayoutController implements Initializable {
-	@FXML
-	private TextField importImagePathTf;
-	@FXML
-	private TextField importImageWidthTf;
-	@FXML
-	private TextField importImageHeightTf;
-	@FXML
-	private TextField importImageSizeTf;
-	@FXML
-	private ListView<String> layerListView;
-	private FileChooser fileChooser;
-	@FXML
-	private Menu mRecentMenu;
-	@FXML
-	private Button browserImportBtn;
-	@FXML
-	private Button addToImageBtn;
-	@FXML
-	private ToolBar layerToolbar;
-	@FXML
-	private Slider layerAlphaSlider;
-	@FXML
-	private Slider scaleSlider;
-	@FXML
-	private Label mScaleLabel;
-	@FXML
-	private CheckBox layerShowCheck;
-	@FXML
-	private CheckBox layerColliderCheck;
-	@FXML
-	private Label mapSizeLabel;
-	@FXML
-	private Label nowMousePositionLabel;
-
-	@FXML
-	private ScrollPane tilesetCanvasScrollPane;
-	@FXML
-	private ScrollPane mapScrollPane;
-	@FXML
-	private ListView<String> TilesetListView;
-	@FXML
-	private RadioMenuItem normalBrushItem;
-	@FXML
-	private RadioMenuItem paintPailItem;
-	@FXML
-	private RadioMenuItem eraserItem;
-	@FXML
-	private RadioMenuItem rectItem;
-	@FXML
-	private CheckMenuItem showMapGridItem;
-	@FXML
-	private CheckMenuItem showAltasGridItem;
-	@FXML
-	private CheckMenuItem showPropertyGridItem;
-	// private int altasOffsetX = 0;
-	// private int altasOffsetY = 0;
-
-	private final ObservableList<String> layerList = FXCollections.observableArrayList();
-	private final ObservableList<String> imagePathList = FXCollections.observableArrayList();
-	private Image nowBrowserImage;
-	private final List<TiledMapLayer> tiledMapLayerList = new ArrayList<>();
-
-	private TilesetCanvas tilesetCanvas;
-	private MapCanvas mapCanvas;
-	private final SimpleStringProperty nowSelectAltasIdProperty = new SimpleStringProperty();
-	private final SimpleIntegerProperty brushTypeProperty = new SimpleIntegerProperty();
-
-	private FileChooser openMapChooser;
-	private FileChooser saveAsFileChooser;
-	private FileChooser exportFileChooser;
-
-	private NewMapDialog newMapDialog;
-
-	private final SAXReader saxReader = new SAXReader();
-	// Is there an error when opening the map?
-	private boolean isReadError = false;
-	// Whether to open or create a new map
-	private boolean isNewOrOpenMap = false;
-	// Read the information returned by the map
-	private final List<String> readMessageList = new ArrayList<>();
-	// Drawing thread sleep time
-	private final static long THREAD_SLEEP = 50;
-
-	private File openMapFile;
-
-	private final Thread drawThread = new Thread(new Runnable() {
-		@Override
-		public void run() {
-			while (isRunning) {
-				Platform.runLater(() -> {
+    // Drawing thread sleep time
+    private final static long THREAD_SLEEP = 50;
+    public static boolean isRunning = true;
+    private final ObservableList<String> layerList = FXCollections.observableArrayList();
+    private final ObservableList<UUID> imagePathList = FXCollections.observableArrayList();
+    private final List<TiledMapLayer> tiledMapLayerList = new ArrayList<>();
+    private final SimpleIntegerProperty brushTypeProperty = new SimpleIntegerProperty();
+    private final SAXReader saxReader = new SAXReader();
+    // Read the information returned by the map
+    private final List<String> readMessageList = new ArrayList<>();
+    @FXML
+    private TextField importImagePathTf;
+    @FXML
+    private TextField importImageWidthTf;
+    @FXML
+    private TextField importImageHeightTf;
+    @FXML
+    private TextField importImageSizeTf;
+    @FXML
+    private ListView<String> layerListView;
+    private FileChooser fileChooser;
+    @FXML
+    private Menu mRecentMenu;
+    @FXML
+    private Button browserImportBtn;
+    @FXML
+    private Button addToImageBtn;
+    @FXML
+    private ToolBar layerToolbar;
+    @FXML
+    private Slider scaleSlider;
+    @FXML
+    private Label mScaleLabel;
+    @FXML
+    private CheckBox layerShowCheck;
+    @FXML
+    private CheckBox layerColliderCheck;
+    @FXML
+    private Label mapSizeLabel;
+    @FXML
+    private Label nowMousePositionLabel;
+    @FXML
+    private ScrollPane tilesetCanvasScrollPane;
+    @FXML
+    private ScrollPane mapScrollPane;
+    @FXML
+    private ListView<UUID> tilesetListView;
+    @FXML
+    private RadioMenuItem normalBrushItem;
+    @FXML
+    private RadioMenuItem paintPailItem;
+    @FXML
+    private RadioMenuItem eraserItem;
+    @FXML
+    private RadioMenuItem rectItem;
+    @FXML
+    private CheckMenuItem showMapGridItem;
+    @FXML
+    private CheckMenuItem showTilesetGridItem;
+    @FXML
+    private CheckMenuItem showPropertyGridItem;
+    private TilesetCanvas tilesetCanvas;
+    private MapCanvas mapCanvas;
+    private FileChooser openMapChooser;
+    private FileChooser saveAsFileChooser;
+    private FileChooser exportFileChooser;
+    private NewMapDialog newMapDialog;
+    // Is there an error when opening the map?
+    private boolean isReadError = false;
+    // Whether to open or create a new map
+    private boolean isNewOrOpenMap = false;
+    private final Thread drawThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (isRunning) {
+                Platform.runLater(() -> {
                     if (tilesetCanvas != null) {
                         tilesetCanvas.draw();
                     }
                     if (mapCanvas != null) {
                         mapCanvas.draw();
-                        if (isNewOrOpenMap && !layerList.isEmpty())
-                            nowMousePositionLabel.setText(mapCanvas.getMouseCols() + ", "
-                                    + mapCanvas.getMouseRows());
+						if (isNewOrOpenMap && !layerList.isEmpty()) {
+							nowMousePositionLabel.setText(mapCanvas.getMouseCols() + ", "
+									+ mapCanvas.getMouseRows());
+						}
                     }
                 });
-				try {
-					Thread.sleep(THREAD_SLEEP);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	});
-	public static boolean isRunning = true;
+                try {
+                    Thread.sleep(THREAD_SLEEP);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
+    private File openMapFile;
 
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		TiledMap.getInstance().setMapProperty(13, 7);
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        TiledMap.getInstance().setMapProperty(13, 7);
 
-		// file selector
-		fileChooser = new FileChooser();
-		fileChooser.getExtensionFilters().add(new ExtensionFilter("Image files", "*.jpg", "*.png", "*.bmp"));
-		tilesetCanvas = new TilesetCanvas(tilesetCanvasScrollPane.getWidth(), tilesetCanvasScrollPane.getHeight());
-		tilesetCanvas.BrushTypeProperty().bind(brushTypeProperty);
-		// Open map
-		openMapChooser = new FileChooser();
-		openMapChooser.getExtensionFilters().add(new ExtensionFilter("Map file", "*.xml"));
+        // file selector
+        fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new ExtensionFilter("Image files", "*.jpg", "*.png", "*.bmp"));
+        tilesetCanvas = new TilesetCanvas(tilesetCanvasScrollPane.getWidth(), tilesetCanvasScrollPane.getHeight());
+        tilesetCanvas.BrushTypeProperty().bind(brushTypeProperty);
+        // Open map
+        openMapChooser = new FileChooser();
+        openMapChooser.getExtensionFilters().add(new ExtensionFilter("Map file", "*.xml"));
 
-		saveAsFileChooser = new FileChooser();
-		saveAsFileChooser.getExtensionFilters().add(new ExtensionFilter("XML file", "*.xml"));
+        saveAsFileChooser = new FileChooser();
+        saveAsFileChooser.getExtensionFilters().add(new ExtensionFilter("XML file", "*.xml"));
 
-		exportFileChooser = new FileChooser();
-		exportFileChooser.getExtensionFilters().add(new ExtensionFilter("Image files", "*.png"));
+        exportFileChooser = new FileChooser();
+        exportFileChooser.getExtensionFilters().add(new ExtensionFilter("Image files", "*.png"));
 
-		// tileset
-		tilesetCanvas.widthProperty().bind(tilesetCanvasScrollPane.widthProperty());
-		tilesetCanvas.heightProperty().bind(tilesetCanvasScrollPane.heightProperty());
-		tilesetCanvasScrollPane.setContent(tilesetCanvas);
+        // tileset
+        tilesetCanvas.widthProperty().bind(tilesetCanvasScrollPane.widthProperty());
+        tilesetCanvas.heightProperty().bind(tilesetCanvasScrollPane.heightProperty());
+        tilesetCanvasScrollPane.setContent(tilesetCanvas);
 
-		// mapping
-		mapCanvas = new MapCanvas(TiledMap.getInstance().getMapWidth(), TiledMap.getInstance().getMapHeight());
-		mapCanvas.NowSelectLayerProperty().bind(layerListView.getSelectionModel().selectedIndexProperty());
-		mapCanvas.BrushTypeProperty().bind(brushTypeProperty);
-		mapCanvas.setMapLayerList(tiledMapLayerList);
-		mapCanvas.NowChooseProperty().bind(tilesetCanvas.NowChooseProperty());
-		// mapCanvas.ScaleProperty().bind(scaleSlider.valueProperty());
-		scaleSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+        // mapping
+        mapCanvas = new MapCanvas(TiledMap.getInstance().getMapWidth(), TiledMap.getInstance().getMapHeight());
+        mapCanvas.NowSelectLayerProperty().bind(layerListView.getSelectionModel().selectedIndexProperty());
+        mapCanvas.BrushTypeProperty().bind(brushTypeProperty);
+        mapCanvas.setMapLayerList(tiledMapLayerList);
+        mapCanvas.NowChooseProperty().bind(tilesetCanvas.NowChooseProperty());
+        // mapCanvas.ScaleProperty().bind(scaleSlider.valueProperty());
+        scaleSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             String value = newValue.toString().subSequence(0, 3).toString();
             mScaleLabel.setText(value);
             mapCanvas.setScale(newValue.doubleValue());
@@ -213,18 +200,18 @@ public class MainLayoutController implements Initializable {
             mapCanvas.setWidth(width);
             mapCanvas.setHeight(height);
         });
-		mapScrollPane.setContent(mapCanvas);
-		drawThread.start();
+        mapScrollPane.setContent(mapCanvas);
+        drawThread.start();
 
-		// Layer list
-		layerListView.setItems(layerList);
-		layerListView.setEditable(true);
-		layerListView.setCellFactory(TextFieldListCell.forListView());
-		layerListView.setOnEditCommit(event -> {
+        // Layer list
+        layerListView.setItems(layerList);
+        layerListView.setEditable(true);
+        layerListView.setCellFactory(TextFieldListCell.forListView());
+        layerListView.setOnEditCommit(event -> {
             layerList.set(event.getIndex(), event.getNewValue());
             tiledMapLayerList.get(event.getIndex()).setLayerName(event.getNewValue());
         });
-		layerListView.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+        layerListView.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
             int index = newValue.intValue();
             if (index >= 0 && index < tiledMapLayerList.size()) {
                 TiledMapLayer mapLayer = tiledMapLayerList.get(index);
@@ -233,7 +220,7 @@ public class MainLayoutController implements Initializable {
             }
         });
 
-		layerShowCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        layerShowCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
             int index = layerListView.getSelectionModel().selectedIndexProperty().get();
             if (index >= 0) {
                 TiledMapLayer mapLayer = tiledMapLayerList.get(index);
@@ -241,7 +228,7 @@ public class MainLayoutController implements Initializable {
             }
         });
 
-		layerColliderCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        layerColliderCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
             int index = layerListView.getSelectionModel().selectedIndexProperty().get();
             if (index >= 0) {
                 TiledMapLayer mapLayer = tiledMapLayerList.get(index);
@@ -249,11 +236,12 @@ public class MainLayoutController implements Initializable {
             }
         });
 
-		// Tileset list
-		TilesetListView.setItems(imagePathList);
-		TilesetListView.setCellFactory(param -> new ImageCell());
-		TilesetListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            TilesetResourceManager.TilesetResource tilesetResource = TilesetResourceManager.getInstance().getResourceById(newValue);
+        // Tileset list
+        tilesetListView.setItems(imagePathList);
+        tilesetListView.setCellFactory(param -> new ImageCell());
+        tilesetListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            TilesetResourceManager.TilesetResource tilesetResource = TilesetResourceManager.getInstance()
+                                                                                           .getResourceById(newValue);
             if (tilesetResource != null && tilesetResource.getImage() != null) {
                 Image image = tilesetResource.getImage();
                 tilesetCanvas.setImage(image);
@@ -263,485 +251,478 @@ public class MainLayoutController implements Initializable {
                 mapCanvas.setNowTilesetResource(null);
             }
         });
-		nowSelectAltasIdProperty.bind(TilesetListView.getSelectionModel().selectedItemProperty());
 
-		// Dialog box
-		newMapDialog = new NewMapDialog();
-		newMapDialog.setOnNewMapDialogActionListener(new NewMapDialog.OnNewMapDialogActionListener() {
-			@Override
-			public void onNewMapOkAction() {
-				clearAll();
-				newOrOpenMap();
-				openMapFile = null;
-				// Set map canvas size
-				mapCanvas.setWidth(TiledMap.getInstance().getRealTileMapWidth());
-				mapCanvas.setHeight(TiledMap.getInstance().getRealTileMapHeight());
-				mapSizeLabel.setText(TiledMap.getInstance().getMapWidth() + " x "
-						+ TiledMap.getInstance().getMapHeight());
-			}
+        // Dialog box
+        newMapDialog = new NewMapDialog();
+        newMapDialog.setOnNewMapDialogActionListener(new NewMapDialog.OnNewMapDialogActionListener() {
+            @Override
+            public void onNewMapOkAction() {
+                clearAll();
+                newOrOpenMap();
+                openMapFile = null;
+                // Set map canvas size
+                mapCanvas.setWidth(TiledMap.getInstance().getRealTileMapWidth());
+                mapCanvas.setHeight(TiledMap.getInstance().getRealTileMapHeight());
+                mapSizeLabel.setText(TiledMap.getInstance().getMapWidth() + " x "
+                        + TiledMap.getInstance().getMapHeight());
+            }
 
-			@Override
-			public void onNewMapCancelAction() {
+            @Override
+            public void onNewMapCancelAction() {
 
-			}
-		});
+            }
+        });
 
-		// Menu
-		ToggleGroup tGroup = new ToggleGroup();
-		normalBrushItem.setToggleGroup(tGroup);
-		paintPailItem.setToggleGroup(tGroup);
-		eraserItem.setToggleGroup(tGroup);
-		rectItem.setToggleGroup(tGroup);
-		normalBrushItem.setSelected(true);
-		mapCanvas.ShowGridProperty().bind(showMapGridItem.selectedProperty());
-		tilesetCanvas.ShowGridProperty().bind(showAltasGridItem.selectedProperty());
-		mapCanvas.ShowProProperty().bind(showPropertyGridItem.selectedProperty());
-		// Read recently opened files
-		initRecentFiles();
-	}
+        // Menu
+        ToggleGroup tGroup = new ToggleGroup();
+        normalBrushItem.setToggleGroup(tGroup);
+        paintPailItem.setToggleGroup(tGroup);
+        eraserItem.setToggleGroup(tGroup);
+        rectItem.setToggleGroup(tGroup);
+        normalBrushItem.setSelected(true);
+        mapCanvas.ShowGridProperty().bind(showMapGridItem.selectedProperty());
+        tilesetCanvas.ShowGridProperty().bind(showTilesetGridItem.selectedProperty());
+        mapCanvas.ShowProProperty().bind(showPropertyGridItem.selectedProperty());
+        // Read recently opened files
+        initRecentFiles();
+    }
 
-	private void initRecentFiles() {
-		Config.getInstance().readConfig();
-		ArrayList<String> paths = Config.getInstance().getFilePaths();
-		for (String path : paths) {
-			MenuItem item = new MenuItem(path);
-			item.setOnAction(e -> {
-			    File file = new File(path);
-			    if(file.exists()){
-				readMapWithAlert(new File(path));
-			    } else {
-			    	AlertDialog.showAlertDialog("Map file does not exist");
-			    	mRecentMenu.getItems().remove(this);
-			    	removeRecentFile(file);
-			    }
-			});
-			mRecentMenu.getItems().add(item);
-		}
-	}
+    private void initRecentFiles() {
+        Config.getInstance().readConfig();
+        ArrayList<String> paths = Config.getInstance().getFilePaths();
+        for (String path : paths) {
+            MenuItem item = new MenuItem(path);
+            item.setOnAction(e -> {
+                File file = new File(path);
+                if (file.exists()) {
+                    readMapWithAlert(new File(path));
+                } else {
+                    AlertDialog.showAlertDialog("Map file does not exist");
+                    mRecentMenu.getItems().remove(this);
+                    removeRecentFile(file);
+                }
+            });
+            mRecentMenu.getItems().add(item);
+        }
+    }
 
-	private void addRecentFile(File file) {
-		if (!Config.getInstance().getFilePaths().contains(file.getAbsolutePath())) {
-			Config.getInstance().getFilePaths().add(file.getAbsolutePath());
-			MenuItem item = new MenuItem(file.getAbsolutePath());
-			item.setOnAction(e -> {
-				readMapWithAlert(file);
-			});
-			mRecentMenu.getItems().add(item);
-		}
-	}
-	
-	private void removeRecentFile(File file) {
-		if (Config.getInstance().getFilePaths().contains(file.getAbsolutePath())) {
-			Config.getInstance().getFilePaths().remove(file.getAbsolutePath());
-		}
-	}
+    private void addRecentFile(File file) {
+        if (!Config.getInstance().getFilePaths().contains(file.getAbsolutePath())) {
+            Config.getInstance().getFilePaths().add(file.getAbsolutePath());
+            MenuItem item = new MenuItem(file.getAbsolutePath());
+            item.setOnAction(e -> readMapWithAlert(file));
+            mRecentMenu.getItems().add(item);
+        }
+    }
 
-	/**
-	 * Clear map
-	 */
-	private void clearAll() {
-		tiledMapLayerList.clear();
-		TilesetResourceManager.getInstance().removeAll();
-		imagePathList.clear();
-		tilesetCanvas.setImage(null);
-		layerList.clear();
-		readMessageList.clear();
-		// Clear attribute list when reading map
-		TiledMap.getInstance().getPropertyList().clear();
-	}
+    private void removeRecentFile(File file) {
+        Config.getInstance().getFilePaths().remove(file.getAbsolutePath());
+    }
 
-	/**
-	 * UI changes for creating or opening a map
-	 */
-	private void newOrOpenMap() {
-		isNewOrOpenMap = true;
-		browserImportBtn.setDisable(false);
-		addToImageBtn.setDisable(false);
-		layerToolbar.setDisable(false);
-	}
+    /**
+     * Clear map
+     */
+    private void clearAll() {
+        tiledMapLayerList.clear();
+        TilesetResourceManager.getInstance().removeAll();
+        imagePathList.clear();
+        tilesetCanvas.setImage(null);
+        layerList.clear();
+        readMessageList.clear();
+        // Clear attribute list when reading map
+        TiledMap.getInstance().getPropertyList().clear();
+    }
 
-	/**
-	 * Read map
-	 * 
-	 * @param file - file map
-	 */
-	private void readMap(File file) {
-		// Clear all resources
-		clearAll();
-		isReadError = false;
-		try {
-			Document document = saxReader.read(file);
-			Element rootElement = document.getRootElement();
-			for (Iterator<Element> i = rootElement.elementIterator(); i.hasNext();) {
-				Element e = i.next();
-				if (e.getName().equals(XMLElements.ELEMENT_MAP_SETTING)) {
-					// Read map information
-					int mapWidth = Integer.parseInt(e.elementText(XMLElements.ELEMENT_MAP_WIDTH));
-					int mapHeight = Integer.parseInt(e.elementText(XMLElements.ELEMENT_MAP_HEIGHT));
-					int tileWidth = Integer.parseInt(e.elementText(XMLElements.ELEMENT_TILE_WIDTH));
-					int tileHeight = Integer.parseInt(e.elementText(XMLElements.ELEMENT_TILE_HEIGHT));
-					TiledMap.getInstance().setMapProperty(mapWidth, mapHeight);
-					// Set map canvas size
-					mapCanvas.setWidth(tileWidth * mapWidth);
-					mapCanvas.setHeight(tileHeight * mapHeight);
-					mapSizeLabel.setText(TiledMap.getInstance().getMapWidth() + " x "
-							+ TiledMap.getInstance().getMapHeight());
-					readMessageList.add("Read map settings successfully");
-				} else if (e.getName().equals(XMLElements.ELEMENT_MAP_RESOURCE)) {
-					//Read map resources and add them to resource management
-					TilesetResourceManager.getInstance().removeAll();
-					for (Iterator<Element> j = e.elementIterator(); j.hasNext();) {
-						Element ej = j.next();
-						String altasID = ej.elementText(XMLElements.ELEMENT_ALTAS_ID);
-						String altasPath = ej.elementText(XMLElements.ELEMENT_ALTAS_PATH);
-						String fileName = altasPath.substring(altasPath.lastIndexOf("\\") + 1);
-						try {
-							addImageAtlas(altasID, altasPath);
-							readMessageList.add("Read texture " + fileName + " successfully");
-						} catch (FileNotFoundException e1) {
-							e1.printStackTrace();
-							isReadError = true;
-							readMessageList.add("Texture " + fileName + " not found");
-						}
-					}
-					// Add to resource list
-					List<TilesetResourceManager.TilesetResource> alResources = TilesetResourceManager.getInstance().getResources();
-					for (TilesetResourceManager.TilesetResource resource : alResources) {
-						imagePathList.add(resource.getAltasId());
-					}
+    /**
+     * UI changes for creating or opening a map
+     */
+    private void newOrOpenMap() {
+        isNewOrOpenMap = true;
+        browserImportBtn.setDisable(false);
+        addToImageBtn.setDisable(false);
+        layerToolbar.setDisable(false);
+    }
 
-				} else if (e.getName().equals(XMLElements.ELEMENT_MAP_DATA)) {
-					// Read layer data and convert it into map data
-					for (Iterator<Element> j = e.elementIterator(); j.hasNext();) {
-						TiledMapLayer tiledMapLayer = new TiledMapLayer();
-						Element ej = j.next();
-						String layerName = ej.attributeValue(XMLElements.ATTRIBUTE_NAME);
-						String visibleStr = ej.attributeValue(XMLElements.ATTRIBUTE_VISIBLE);
-						String colliderStr = ej.attributeValue(XMLElements.ATTRIBUTE_COLLIDER);
-						String mapData = ej.getText();
-						tiledMapLayer.setLayerName(layerName);
-						if (visibleStr != null)
+    /**
+     * Read map
+     *
+     * @param file - file map
+     */
+    private void readMap(File file) {
+        // Clear all resources
+        clearAll();
+        isReadError = false;
+        try {
+            Document document = saxReader.read(file);
+            Element rootElement = document.getRootElement();
+            for (Iterator<Element> i = rootElement.elementIterator(); i.hasNext(); ) {
+                Element e = i.next();
+                if (e.getName().equals(XMLElements.ELEMENT_MAP_SETTING)) {
+                    // Read map information
+                    int mapWidth = Integer.parseInt(e.elementText(XMLElements.ELEMENT_MAP_WIDTH));
+                    int mapHeight = Integer.parseInt(e.elementText(XMLElements.ELEMENT_MAP_HEIGHT));
+                    int tileWidth = Integer.parseInt(e.elementText(XMLElements.ELEMENT_TILE_WIDTH));
+                    int tileHeight = Integer.parseInt(e.elementText(XMLElements.ELEMENT_TILE_HEIGHT));
+                    TiledMap.getInstance().setMapProperty(mapWidth, mapHeight);
+                    // Set map canvas size
+                    mapCanvas.setWidth(tileWidth * mapWidth);
+                    mapCanvas.setHeight(tileHeight * mapHeight);
+                    mapSizeLabel.setText(TiledMap.getInstance().getMapWidth() + " x "
+                            + TiledMap.getInstance().getMapHeight());
+                    readMessageList.add("Read map settings successfully");
+                } else if (e.getName().equals(XMLElements.ELEMENT_MAP_RESOURCE)) {
+                    //Read map resources and add them to resource management
+                    TilesetResourceManager.getInstance().removeAll();
+                    for (Iterator<Element> j = e.elementIterator(); j.hasNext(); ) {
+                        Element ej = j.next();
+                        UUID altasID = UUID.fromString(ej.elementText(XMLElements.ELEMENT_ALTAS_ID));
+                        String altasPath = ej.elementText(XMLElements.ELEMENT_ALTAS_PATH);
+                        String fileName = altasPath.substring(altasPath.lastIndexOf("\\") + 1);
+                        try {
+                            addImageTileset(altasID, altasPath);
+                            readMessageList.add("Read texture " + fileName + " successfully");
+                        } catch (FileNotFoundException e1) {
+                            e1.printStackTrace();
+                            isReadError = true;
+                            readMessageList.add("Texture " + fileName + " not found");
+                        }
+                    }
+                    // Add to resource list
+                    List<TilesetResourceManager.TilesetResource> alResources = TilesetResourceManager.getInstance()
+                                                                                                     .getResources();
+                    for (TilesetResourceManager.TilesetResource resource : alResources) {
+                        imagePathList.add(resource.getTilesetId());
+                    }
+
+                } else if (e.getName().equals(XMLElements.ELEMENT_MAP_DATA)) {
+                    // Read layer data and convert it into map data
+                    for (Iterator<Element> j = e.elementIterator(); j.hasNext(); ) {
+                        TiledMapLayer tiledMapLayer = new TiledMapLayer();
+                        Element ej = j.next();
+                        String layerName = ej.attributeValue(XMLElements.ATTRIBUTE_NAME);
+                        String visibleStr = ej.attributeValue(XMLElements.ATTRIBUTE_VISIBLE);
+                        String colliderStr = ej.attributeValue(XMLElements.ATTRIBUTE_COLLIDER);
+                        String mapData = ej.getText();
+                        tiledMapLayer.setLayerName(layerName);
+						if (visibleStr != null) {
 							tiledMapLayer.setVisible(Boolean.parseBoolean(visibleStr));
-						if (colliderStr != null)
-							tiledMapLayer.setCollider(Boolean.parseBoolean(colliderStr));
-						tiledMapLayer.ConvertFromString(mapData);
-						layerList.add(layerName);
-						// The read layers are added to the list
-						tiledMapLayerList.add(tiledMapLayer);
-						readMessageList.add("Read layer \"" + layerName + "\" successfully");
-					}
-				} else if (e.getName().equals(XMLElements.ELEMENT_MAP_PROPERTY)) {
-					// Read layer data and convert it into map data
-					for (Iterator<Element> j = e.elementIterator(); j.hasNext();) {
-						TileProperty tileProperty = new TileProperty();
-						Element ej = j.next();
-						String col = ej.attributeValue(XMLElements.ATTRIBUTE_COL);
-						String row = ej.attributeValue(XMLElements.ATTRIBUTE_ROW);
-						tileProperty.setCol(Integer.parseInt(col));
-						tileProperty.setRow(Integer.parseInt(row));
-
-						for (Iterator<Element> oj = ej.elementIterator(); oj.hasNext();) {
-							Element property = oj.next();
-							String key = property.attributeValue(XMLElements.ATTRIBUTE_KEY);
-							String value = property.attributeValue(XMLElements.ATTRIBUTE_VALUE);
-							tileProperty.insertValue(key, value);
 						}
-						TiledMap.getInstance().getPropertyList().add(tileProperty);
-					}
-					readMessageList.add("Read map attribute list successfully");
-				}
-			}
-		} catch (DocumentException e) {
-			e.printStackTrace();
-			isReadError = true;
-			readMessageList.add("Error reading map file" + e.getMessage());
-		}
-		addRecentFile(file);
-	}
-	
-	private void readMapWithAlert(File mapFile){
-		readMap(mapFile);
-		String str = !isReadError
-				? "Reading map completed:"
-				: "An error occurred while reading the map:";
-		StringBuilder sb = new StringBuilder();
-		sb.append(str).append(System.getProperty("line.separator"));
-		for (String s : readMessageList) {
-			sb.append(s).append(System.getProperty("line.separator"));
-		}
-		newOrOpenMap();
-		openMapFile = mapFile;
-		AlertDialog.showAlertDialog(sb.toString());
-	}
+						if (colliderStr != null) {
+							tiledMapLayer.setCollider(Boolean.parseBoolean(colliderStr));
+						}
+                        tiledMapLayer.convertFromString(mapData);
+                        layerList.add(layerName);
+                        // The read layers are added to the list
+                        tiledMapLayerList.add(tiledMapLayer);
+                        readMessageList.add("Read layer \"" + layerName + "\" successfully");
+                    }
+                } else if (e.getName().equals(XMLElements.ELEMENT_MAP_PROPERTY)) {
+                    // Read layer data and convert it into map data
+                    for (Iterator<Element> j = e.elementIterator(); j.hasNext(); ) {
+                        TileProperty tileProperty = new TileProperty();
+                        Element ej = j.next();
+                        String col = ej.attributeValue(XMLElements.ATTRIBUTE_COL);
+                        String row = ej.attributeValue(XMLElements.ATTRIBUTE_ROW);
+                        tileProperty.setCol(Integer.parseInt(col));
+                        tileProperty.setRow(Integer.parseInt(row));
 
-	@FXML
-	public void onNewMapAction(ActionEvent e) {
-		newMapDialog.showAlertDialog();
-	}
+                        for (Iterator<Element> oj = ej.elementIterator(); oj.hasNext(); ) {
+                            Element property = oj.next();
+                            String key = property.attributeValue(XMLElements.ATTRIBUTE_KEY);
+                            String value = property.attributeValue(XMLElements.ATTRIBUTE_VALUE);
+                            tileProperty.insertValue(key, value);
+                        }
+                        TiledMap.getInstance().getPropertyList().add(tileProperty);
+                    }
+                    readMessageList.add("Read map attribute list successfully");
+                }
+            }
+        } catch (DocumentException e) {
+            e.printStackTrace();
+            isReadError = true;
+            readMessageList.add("Error reading map file" + e.getMessage());
+        }
+        addRecentFile(file);
+    }
 
-	@FXML
-	public void onOpenMapAction(ActionEvent e) {
-		File mapFile = openMapChooser.showOpenDialog(null);
-		if (mapFile != null) {
+    private void readMapWithAlert(File mapFile) {
+        readMap(mapFile);
+        String str = !isReadError
+                ? "Reading map completed:"
+                : "An error occurred while reading the map:";
+        StringBuilder sb = new StringBuilder();
+        sb.append(str).append(System.getProperty("line.separator"));
+        for (String s : readMessageList) {
+            sb.append(s).append(System.getProperty("line.separator"));
+        }
+        newOrOpenMap();
+        openMapFile = mapFile;
+        AlertDialog.showAlertDialog(sb.toString());
+    }
+
+    @FXML
+    public void onNewMapAction(ActionEvent e) {
+        newMapDialog.showAlertDialog();
+    }
+
+    @FXML
+    public void onOpenMapAction(ActionEvent e) {
+        File mapFile = openMapChooser.showOpenDialog(null);
+        if (mapFile != null) {
             readMapWithAlert(mapFile);
-		}
-	}
+        }
+    }
 
-	@FXML
-	public void onSaveMapAction(ActionEvent e) {
-		if (openMapFile == null) {
-			File file = saveAsFileChooser.showSaveDialog(null);
-			openMapFile = file;
-			if (file != null) {
-				saveMapToFile(file);
-			}
-		} else {
-			saveMapToFile(openMapFile);
-		}
-	}
+    @FXML
+    public void onSaveMapAction(ActionEvent e) {
+        if (openMapFile == null) {
+            File file = saveAsFileChooser.showSaveDialog(null);
+            openMapFile = file;
+            if (file != null) {
+                saveMapToFile(file);
+            }
+        } else {
+            saveMapToFile(openMapFile);
+        }
+    }
 
-	@FXML
-	public void onSaveAsMapAction(ActionEvent e) {
-		File file = saveAsFileChooser.showSaveDialog(null);
-		addRecentFile(file);
-		openMapFile = file;
-		if (file != null) {
-			saveMapToFile(file);
-		}
-	}
+    @FXML
+    public void onSaveAsMapAction(ActionEvent e) {
+        File file = saveAsFileChooser.showSaveDialog(null);
+        addRecentFile(file);
+        openMapFile = file;
+        saveMapToFile(file);
+    }
 
-	@FXML
-	public void onExportToImageAction(ActionEvent e) {
-		File file = exportFileChooser.showSaveDialog(null);
-		if (file != null) {
-			WritableImage image = mapCanvas.snapshot(new SnapshotParameters(), null);
-			try {
-				ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
-				AlertDialog.showAlertDialog("Saved successfully!");
-			} catch (IOException ex) {
-				AlertDialog.showAlertDialog("Save failed:" + ex.getMessage());
-			}
-		}
-	}
+    @FXML
+    public void onExportToImageAction(ActionEvent e) {
+        File file = exportFileChooser.showSaveDialog(null);
+        if (file != null) {
+            WritableImage image = mapCanvas.snapshot(new SnapshotParameters(), null);
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+                AlertDialog.showAlertDialog("Saved successfully!");
+            } catch (IOException ex) {
+                AlertDialog.showAlertDialog("Save failed:" + ex.getMessage());
+            }
+        }
+    }
 
-	/**
-	 * Save map to file
-	 * @param file - map file
-	 */
-	private void saveMapToFile(File file) {
-		Document map = createSaveDocument();
-		XMLWriter writer;
-		try {
-			writer = new XMLWriter(new FileOutputStream(file));
-			writer.write(map);
-			writer.close();
-			AlertDialog.showAlertDialog("Save map completed!");
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			AlertDialog.showAlertDialog("Error saving map: " + e1.getMessage());
-		}
-	}
+    /**
+     * Save map to file
+     *
+     * @param file - map file
+     */
+    private void saveMapToFile(File file) {
+        Document map = createSaveDocument();
+        XMLWriter writer;
+        try {
+            writer = new XMLWriter(new FileOutputStream(file));
+            writer.write(map);
+            writer.close();
+            AlertDialog.showAlertDialog("Save map completed!");
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            AlertDialog.showAlertDialog("Error saving map: " + e1.getMessage());
+        }
+    }
 
-	@FXML
-	public void onAboutAction(ActionEvent e) {
-		AboutDialog.showAboutDialog();
-	}
+    @FXML
+    public void onAboutAction(ActionEvent e) {
+        AboutDialog.showAboutDialog();
+    }
 
-	/*
-	 * Create saved map data
-	 */
-	private Document createSaveDocument() {
-		Document document = DocumentHelper.createDocument();
-		Element map = document.addElement(XMLElements.ELEMENT_MAP);
+    /*
+     * Create saved map data
+     */
+    private Document createSaveDocument() {
+        Document document = DocumentHelper.createDocument();
+        Element map = document.addElement(XMLElements.ELEMENT_MAP);
 
-		Element mapSetting = map.addElement(XMLElements.ELEMENT_MAP_SETTING);
+        Element mapSetting = map.addElement(XMLElements.ELEMENT_MAP_SETTING);
 
-		Element mapWidth = mapSetting.addElement(XMLElements.ELEMENT_MAP_WIDTH);
-		mapWidth.setText(TiledMap.getInstance().getMapWidth() + "");
+        Element mapWidth = mapSetting.addElement(XMLElements.ELEMENT_MAP_WIDTH);
+        mapWidth.setText(TiledMap.getInstance().getMapWidth() + "");
 
-		Element mapHeight = mapSetting.addElement(XMLElements.ELEMENT_MAP_HEIGHT);
-		mapHeight.setText(TiledMap.getInstance().getMapHeight() + "");
+        Element mapHeight = mapSetting.addElement(XMLElements.ELEMENT_MAP_HEIGHT);
+        mapHeight.setText(TiledMap.getInstance().getMapHeight() + "");
 
-		Element tileWidth = mapSetting.addElement(XMLElements.ELEMENT_TILE_WIDTH);
-		tileWidth.setText(String.valueOf(Constans.TILE_WIDTH));
+        Element tileWidth = mapSetting.addElement(XMLElements.ELEMENT_TILE_WIDTH);
+        tileWidth.setText(String.valueOf(Constans.TILE_WIDTH));
 
-		Element tileHeight = mapSetting.addElement(XMLElements.ELEMENT_TILE_HEIGHT);
-		tileHeight.setText(String.valueOf(Constans.TILE_HEIGHT));
+        Element tileHeight = mapSetting.addElement(XMLElements.ELEMENT_TILE_HEIGHT);
+        tileHeight.setText(String.valueOf(Constans.TILE_HEIGHT));
 
-		// 写入资源列表
-		Element mapResource = map.addElement(XMLElements.ELEMENT_MAP_RESOURCE);
-		List<TilesetResourceManager.TilesetResource> resources = TilesetResourceManager.getInstance().getResources();
-		for (int i = 0; i < resources.size(); i++) {
-			TilesetResourceManager.TilesetResource tilesetResource = resources.get(i);
-			Element resource = mapResource.addElement(XMLElements.ELEMENT_RESOURCE);
-			Element resourceId = resource.addElement(XMLElements.ELEMENT_ALTAS_ID);
-			resourceId.setText(tilesetResource.getAltasId());
-			Element resourcePath = resource.addElement(XMLElements.ELEMENT_ALTAS_PATH);
-			resourcePath.setText(tilesetResource.getPathStr());
-		}
+        // Write resource list
+        Element mapResource = map.addElement(XMLElements.ELEMENT_MAP_RESOURCE);
+        List<TilesetResourceManager.TilesetResource> resources = TilesetResourceManager.getInstance().getResources();
+        for (TilesetResourceManager.TilesetResource tilesetResource : resources) {
+            Element resource = mapResource.addElement(XMLElements.ELEMENT_RESOURCE);
+            Element resourceId = resource.addElement(XMLElements.ELEMENT_ALTAS_ID);
+            resourceId.setText(tilesetResource.getTilesetId().toString());
+            Element resourcePath = resource.addElement(XMLElements.ELEMENT_ALTAS_PATH);
+            resourcePath.setText(tilesetResource.getPathStr());
+        }
 
-		Element mapData = map.addElement(XMLElements.ELEMENT_MAP_DATA);
-		for (int i = 0; i < tiledMapLayerList.size(); i++) {
-			TiledMapLayer mapLayer = tiledMapLayerList.get(i);
-			Element layer = mapData.addElement(XMLElements.ELEMENT_MAP_LAYER);
-			layer.addAttribute(XMLElements.ATTRIBUTE_NAME, mapLayer.getLayerName());
-			layer.addAttribute(XMLElements.ATTRIBUTE_VISIBLE, String.valueOf(mapLayer.isVisible()));
-			layer.addAttribute(XMLElements.ATTRIBUTE_COLLIDER, String.valueOf(mapLayer.isCollider()));
-			layer.setText(mapLayer.toString());
-		}
+        Element mapData = map.addElement(XMLElements.ELEMENT_MAP_DATA);
+        for (TiledMapLayer mapLayer : tiledMapLayerList) {
+            Element layer = mapData.addElement(XMLElements.ELEMENT_MAP_LAYER);
+            layer.addAttribute(XMLElements.ATTRIBUTE_NAME, mapLayer.getLayerName());
+            layer.addAttribute(XMLElements.ATTRIBUTE_VISIBLE, String.valueOf(mapLayer.isVisible()));
+            layer.addAttribute(XMLElements.ATTRIBUTE_COLLIDER, String.valueOf(mapLayer.isCollider()));
+            layer.setText(mapLayer.toString());
+        }
 
-		Element tilePropertyElement = map.addElement(XMLElements.ELEMENT_MAP_PROPERTY);
-		ArrayList<TileProperty> tileProperties = TiledMap.getInstance().getPropertyList();
-		for (TileProperty tileProperty : tileProperties) {
-			Element data = tilePropertyElement.addElement(XMLElements.ELEMENT_PROPERTY_DATA);
-			data.addAttribute(XMLElements.ATTRIBUTE_COL, String.valueOf(tileProperty.getCol()));
-			data.addAttribute(XMLElements.ATTRIBUTE_ROW, String.valueOf(tileProperty.getRow()));
+        Element tilePropertyElement = map.addElement(XMLElements.ELEMENT_MAP_PROPERTY);
+        ArrayList<TileProperty> tileProperties = TiledMap.getInstance().getPropertyList();
+        for (TileProperty tileProperty : tileProperties) {
+            Element data = tilePropertyElement.addElement(XMLElements.ELEMENT_PROPERTY_DATA);
+            data.addAttribute(XMLElements.ATTRIBUTE_COL, String.valueOf(tileProperty.getCol()));
+            data.addAttribute(XMLElements.ATTRIBUTE_ROW, String.valueOf(tileProperty.getRow()));
 
-			HashMap<String, String> valuesMap = tileProperty.getValueMap();
-			Iterator<String> keys = valuesMap.keySet().iterator();
-			while (keys.hasNext()) {
-				String key = keys.next();
-				String value = valuesMap.get(key);
-				Element propertyElement = data.addElement(XMLElements.ELEMENT_PROPERTY);
-				propertyElement.addAttribute(XMLElements.ATTRIBUTE_KEY, key);
-				propertyElement.addAttribute(XMLElements.ATTRIBUTE_VALUE, value);
-			}
-		}
+            HashMap<String, String> valuesMap = tileProperty.getValueMap();
+            for (String key : valuesMap.keySet()) {
+                String value = valuesMap.get(key);
+                Element propertyElement = data.addElement(XMLElements.ELEMENT_PROPERTY);
+                propertyElement.addAttribute(XMLElements.ATTRIBUTE_KEY, key);
+                propertyElement.addAttribute(XMLElements.ATTRIBUTE_VALUE, value);
+            }
+        }
 
-		return document;
-	}
+        return document;
+    }
 
-	@FXML
-	public void onBrowserImportImageAction(ActionEvent e) {
-		File file = fileChooser.showOpenDialog(null);
-		if (file != null) {
-			importImagePathTf.setText(file.getAbsolutePath());
-			try {
-				nowBrowserImage = new Image(new FileInputStream(file));
-				importImageWidthTf.setText(nowBrowserImage.getWidth() + "");
-				importImageHeightTf.setText(nowBrowserImage.getHeight() + "");
-				importImageSizeTf.setText(file.length() / 1024 + "kb");
-			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
-			}
-		}
-	}
+    @FXML
+    public void onBrowserImportImageAction(ActionEvent e) {
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            importImagePathTf.setText(file.getAbsolutePath());
+            try {
+                Image browserImage = new Image(new FileInputStream(file));
+                importImageWidthTf.setText(browserImage.getWidth() + "");
+                importImageHeightTf.setText(browserImage.getHeight() + "");
+                importImageSizeTf.setText(file.length() / 1024 + "kb");
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
 
-	@FXML
-	public void onAddToImageAtlasAction(ActionEvent e) {
-		if (!importImagePathTf.getText().equals("")) {
-			String id = TilesetResourceManager.createAltasId();
-			String path = importImagePathTf.getText();
-			try {
-				addImageAtlas(id, path);
-				imagePathList.add(id);
-			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
-			}
-		}
-	}
+    @FXML
+    public void onAddToImageTilesetAction(ActionEvent e) {
+        if (!importImagePathTf.getText().isEmpty()) {
+            UUID id = TilesetResourceManager.createTilesetId();
+            String path = importImagePathTf.getText();
+            try {
+                addImageTileset(id, path);
+                imagePathList.add(id);
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
 
-	private void addImageAtlas(String id, String path) throws FileNotFoundException {
-		Image image = new Image(new FileInputStream(path));
-		TilesetResourceManager.getInstance().addResource(id, path, image);
-	}
+    private void addImageTileset(UUID id, String path) throws FileNotFoundException {
+        Image image = new Image(new FileInputStream(path));
+        TilesetResourceManager.getInstance().addResource(id, path, image);
+    }
 
-	@FXML
-	public void onAddNewLayerAction(ActionEvent e) {
-		String defaultName = "New layer";
-		layerList.add(defaultName);
-		TiledMapLayer tiledMapLayer = new TiledMapLayer();
-		tiledMapLayer.setLayerName(defaultName);
-		tiledMapLayerList.add(tiledMapLayer);
-	}
+    @FXML
+    public void onAddNewLayerAction(ActionEvent e) {
+        String defaultName = "New layer";
+        layerList.add(defaultName);
+        TiledMapLayer tiledMapLayer = new TiledMapLayer();
+        tiledMapLayer.setLayerName(defaultName);
+        tiledMapLayerList.add(tiledMapLayer);
+    }
 
-	@FXML
-	public void onDeleteLayerAction(ActionEvent e) {
-		int index = layerListView.getSelectionModel().getSelectedIndex();
-		if (index >= 0) {
-			layerList.remove(index);
-			tiledMapLayerList.remove(index);
-		}
-	}
+    @FXML
+    public void onDeleteLayerAction(ActionEvent e) {
+        int index = layerListView.getSelectionModel().getSelectedIndex();
+        if (index >= 0) {
+            layerList.remove(index);
+            tiledMapLayerList.remove(index);
+        }
+    }
 
-	@FXML
-	public void onLayerUpAction(ActionEvent e) {
-		int index = layerListView.getSelectionModel().getSelectedIndex();
-		if (index > 0) {
-			String layerStr = layerList.remove(index - 1);
-			TiledMapLayer layer = tiledMapLayerList.remove(index - 1);
-			layerList.add(index, layerStr);
-			tiledMapLayerList.add(index, layer);
-		}
-	}
+    @FXML
+    public void onLayerUpAction(ActionEvent e) {
+        int index = layerListView.getSelectionModel().getSelectedIndex();
+        if (index > 0) {
+            String layerStr = layerList.remove(index - 1);
+            TiledMapLayer layer = tiledMapLayerList.remove(index - 1);
+            layerList.add(index, layerStr);
+            tiledMapLayerList.add(index, layer);
+        }
+    }
 
-	@FXML
-	public void onLayerDownAction(ActionEvent e) {
-		int index = layerListView.getSelectionModel().getSelectedIndex();
-		if (index < layerList.size() - 1) {
-			String layerStr = layerList.remove(index);
-			TiledMapLayer layer = tiledMapLayerList.remove(index);
-			layerList.add(index + 1, layerStr);
-			tiledMapLayerList.add(index + 1, layer);
-		}
-	}
+    @FXML
+    public void onLayerDownAction(ActionEvent e) {
+        int index = layerListView.getSelectionModel().getSelectedIndex();
+        if (index < layerList.size() - 1) {
+            String layerStr = layerList.remove(index);
+            TiledMapLayer layer = tiledMapLayerList.remove(index);
+            layerList.add(index + 1, layerStr);
+            tiledMapLayerList.add(index + 1, layer);
+        }
+    }
 
-	@FXML
-	public void onNormalBrushItemAction(ActionEvent e) {
-		brushTypeProperty.set(0);
-	}
+    @FXML
+    public void onNormalBrushItemAction(ActionEvent e) {
+        brushTypeProperty.set(0);
+    }
 
-	@FXML
-	public void onPaintPailItemAction(ActionEvent e) {
-		brushTypeProperty.set(1);
-	}
+    @FXML
+    public void onPaintPailItemAction(ActionEvent e) {
+        brushTypeProperty.set(1);
+    }
 
-	@FXML
-	public void onEraserItemAction(ActionEvent e) {
-		brushTypeProperty.set(2);
-		if (mapCanvas != null) {
-			mapCanvas.NowChooseProperty().clear();
-		}
-	}
+    @FXML
+    public void onEraserItemAction(ActionEvent e) {
+        brushTypeProperty.set(2);
+        if (mapCanvas != null) {
+            mapCanvas.NowChooseProperty().clear();
+        }
+    }
 
-	@FXML
-	public void onRectItemAction(ActionEvent e) {
-		brushTypeProperty.set(3);
-		if (mapCanvas != null) {
-			mapCanvas.NowChooseProperty().clear();
-		}
-	}
+    @FXML
+    public void onRectItemAction(ActionEvent e) {
+        brushTypeProperty.set(3);
+        if (mapCanvas != null) {
+            mapCanvas.NowChooseProperty().clear();
+        }
+    }
 
-	@FXML
-	public void onDeleteResourceAction(ActionEvent e) {
-		int index = TilesetListView.getSelectionModel().getSelectedIndex();
-		imagePathList.remove(index);
-		TilesetResourceManager.getInstance().removeResource(index);
-	}
+    @FXML
+    public void onDeleteResourceAction(ActionEvent e) {
+        int index = tilesetListView.getSelectionModel().getSelectedIndex();
+        imagePathList.remove(index);
+        TilesetResourceManager.getInstance().removeResource(index);
+    }
 
-	@FXML
-	public void onAppExit(ActionEvent e) {
-		Config.getInstance().saveConfig();
-		System.exit(0);
-		isRunning = false;
-	}
+    @FXML
+    public void onAppExit(ActionEvent e) {
+        Config.getInstance().saveConfig();
+        System.exit(0);
+        isRunning = false;
+    }
 
-	class ImageCell extends ListCell<String> {
-		@Override
-		public void updateItem(String item, boolean empty) {
-			super.updateItem(item, empty);
-			if (item != null && !empty) {
-				ImageView iView;
-				Image image = TilesetResourceManager.getInstance().getResourceById(item).getImage();
-				iView = new ImageView(image);
-				iView.setFitWidth(50);
-				iView.setFitHeight(50);
-				setGraphic(iView);
-			} else {
-				Rectangle rectangle = new Rectangle(TilesetListView.getWidth(), TilesetListView.getHeight());
-				rectangle.setFill(Color.WHITE);
-				setGraphic(rectangle);
-			}
-		}
-	}
+    class ImageCell extends ListCell<UUID> {
+        @Override
+        public void updateItem(UUID item, boolean empty) {
+            super.updateItem(item, empty);
+            if (item != null && !empty) {
+                ImageView iView;
+                Image image = TilesetResourceManager.getInstance().getResourceById(item).getImage();
+                iView = new ImageView(image);
+                iView.setFitWidth(50);
+                iView.setFitHeight(50);
+                setGraphic(iView);
+            } else {
+                Rectangle rectangle = new Rectangle(tilesetListView.getWidth(), tilesetListView.getHeight());
+                rectangle.setFill(Color.WHITE);
+                setGraphic(rectangle);
+            }
+        }
+    }
 }

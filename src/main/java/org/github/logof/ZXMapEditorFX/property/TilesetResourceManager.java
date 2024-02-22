@@ -1,105 +1,83 @@
 package org.github.logof.ZXMapEditorFX.property;
 
 import javafx.scene.image.Image;
+import lombok.Getter;
+import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-/**
- * 贴图集资源管理
- * @author Wing Mei
- */
+
 public class TilesetResourceManager {
-	private final List<TilesetResource> tilesetResources = new ArrayList<>();
-	private static TilesetResourceManager tilesetResourceManager;
+    private static TilesetResourceManager tilesetResourceManager;
+    private final List<TilesetResource> tilesetResources = new ArrayList<>();
 
-	public static TilesetResourceManager getInstance() {
-		if (tilesetResourceManager == null) {
-			tilesetResourceManager = new TilesetResourceManager();
-		}
-		return tilesetResourceManager;
-	}
+    public static TilesetResourceManager getInstance() {
+        if (tilesetResourceManager == null) {
+            tilesetResourceManager = new TilesetResourceManager();
+        }
+        return tilesetResourceManager;
+    }
 
-	public void addResource(String altasId, String path,Image image) {
-		tilesetResources.add(new TilesetResource(altasId, path, image));
-	}
+    public static UUID createTilesetId() {
+        return UUID.randomUUID();
+    }
 
-	public void removeResource(String altasId) {
-		TilesetResource ar = getResourceById(altasId);
-		if (ar != null) {
-			tilesetResources.remove(ar);
-		}
-	}
-	
-	public void removeResource(int index){
-		tilesetResources.remove(index);
-	}
-	
-	public void removeAll(){
-		tilesetResources.clear();
-	}
+    public void addResource(UUID tilesetId, String path, Image image) {
+        tilesetResources.add(new TilesetResource(tilesetId, path, image));
+    }
 
-	public TilesetResource getResourceById(String altasId) {
-		TilesetResource ar = null;
-		for (TilesetResource resource : tilesetResources) {
-			if (resource.getAltasId().equals(altasId)) {
-				ar = resource;
-			}
-		}
-		return ar;
-	}
-	
-	public TilesetResource getResourceByPath(String path) {
-		TilesetResource ar = null;
-		for (TilesetResource resource : tilesetResources) {
-			if (resource.getPathStr().equals(path)) {
-				ar = resource;
-			}
-		}
-		return ar;
-	}
-	
+    public void removeResource(UUID
+                                       tilesetId) {
+        TilesetResource ar = getResourceById(tilesetId);
+        if (ar != null) {
+            tilesetResources.remove(ar);
+        }
+    }
 
-	public static String createAltasId() {
-		return UUID.randomUUID().toString();
-	}
-	
-	public List<TilesetResource> getResources(){
-		return tilesetResources;
-	}
+    public void removeResource(int index) {
+        tilesetResources.remove(index);
+    }
 
-	public static class TilesetResource {
-		private String altasId;
-		private String pathStr;
+    public void removeAll() {
+        tilesetResources.clear();
+    }
+
+    public TilesetResource getResourceById(UUID tilesetId) {
+        TilesetResource ar = null;
+        for (TilesetResource resource : tilesetResources) {
+            if (resource.getTilesetId().equals(tilesetId)) {
+                ar = resource;
+            }
+        }
+        return ar;
+    }
+
+    public TilesetResource getResourceByPath(String path) {
+        TilesetResource ar = null;
+        for (TilesetResource resource : tilesetResources) {
+            if (resource.getPathStr().equals(path)) {
+                ar = resource;
+            }
+        }
+        return ar;
+    }
+
+    public List<TilesetResource> getResources() {
+        return tilesetResources;
+    }
+
+    @Setter
+    @Getter
+    public static class TilesetResource {
+        private UUID tilesetId;
+        private String pathStr;
         private Image image;
-		public TilesetResource(String altasId, String pathStr, Image image) {
-			this.altasId = altasId;
-			this.pathStr = pathStr;
-			this.image = image;
-		}
 
-		public String getAltasId() {
-			return altasId;
-		}
+        public TilesetResource(UUID tilesetId, String pathStr, Image image) {
+            this.tilesetId = tilesetId;
+            this.pathStr = pathStr;
+            this.image = image;
+        }
 
-		public void setAltasId(String altasId) {
-			this.altasId = altasId;
-		}
-
-		public String getPathStr() {
-			return pathStr;
-		}
-
-		public void setPathStr(String pathStr) {
-			this.pathStr = pathStr;
-		}
-
-		public Image getImage() {
-			return image;
-		}
-
-		public void setImage(Image image) {
-			this.image = image;
-		}
-
-	}
+    }
 }

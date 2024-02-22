@@ -47,7 +47,7 @@
                         <TextField layoutX="46.0" layoutY="160.0" prefHeight="23.0" prefWidth="33.0" text="0" />
                         <TextField layoutX="141.0" layoutY="160.0" prefHeight="23.0" prefWidth="33.0" text="0" />
                         <Label layoutX="115.0" layoutY="164.0" text="Y:" />
-                        <Button fx:id="addToImageBtn" disable="true" layoutX="110.0" layoutY="190.0" mnemonicParsing="false" onAction="#onAddToImageAtlasAction" prefHeight="29.0" prefWidth="82.0" text="Add photo album">
+                        <Button fx:id="addToImageBtn" disable="true" layoutX="110.0" layoutY="190.0" mnemonicParsing="false" onAction="#onAddToImageTilesetAction" prefHeight="29.0" prefWidth="82.0" text="Add photo album">
                            <font>
                               <Font size="12.0" />
                            </font></Button>
@@ -75,15 +75,6 @@
                                                 <Button mnemonicParsing="false" onAction="#onLayerDownAction" text="Move down" />
                                              </children>
                                           </HBox>
-                                          <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
-                                             <children>
-                                                <Label text="Transparency:" />
-                                                <Slider fx:id="layerAlphaSlider" max="1.0" prefHeight="14.0" prefWidth="132.0" value="1.0" />
-                                             </children>
-                                             <VBox.margin>
-                                                <Insets bottom="5.0" />
-                                             </VBox.margin>
-                                          </HBox>
                                           <HBox prefHeight="100.0" prefWidth="200.0" spacing="25.0">
                                              <children>
                                                 <Label text="Layers:" />
@@ -98,7 +89,7 @@
                                           </HBox>
                                        </children>
                                        <padding>
-                                          <Insets bottom="15.0" />
+                                          <Insets bottom="10.0" />
                                        </padding>
                                     </VBox>
                                 </items>
@@ -127,7 +118,7 @@
                     <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="226.0" prefWidth="189.0">
                            <children>
-                              <ListView fx:id="TilesetListView" prefHeight="227.0" prefWidth="204.0" />
+                              <ListView fx:id="tilesetListView" prefHeight="227.0" prefWidth="204.0" />
                            </children>
                         </AnchorPane>
                     </content>
@@ -193,7 +184,7 @@
                         <Menu mnemonicParsing="false" text="Display setting">
                           <items>
                               <CheckMenuItem fx:id="showMapGridItem" mnemonicParsing="false" selected="true" text="Show map grid" />
-                              <CheckMenuItem fx:id="showAltasGridItem" mnemonicParsing="false" selected="true" text="Show altas grid" />
+                              <CheckMenuItem fx:id="showTilesetGridItem" mnemonicParsing="false" selected="true" text="Show altas grid" />
                               <CheckMenuItem fx:id="showPropertyGridItem" mnemonicParsing="false" selected="true" text="Show property grid" />
                           </items>
                         </Menu>

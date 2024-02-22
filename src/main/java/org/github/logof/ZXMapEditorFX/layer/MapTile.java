@@ -1,33 +1,25 @@
 package org.github.logof.ZXMapEditorFX.layer;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import org.github.logof.ZXMapEditorFX.entity.MapLayerEntity;
+import java.util.UUID;
+
+@Setter
+@Getter
+@ToString
 public class MapTile {
-    private String altasId = "";
-    private int altasIndex = -1;
-    
-	public String getAltasId() {
-		return altasId;
-	}
-	public void setAltasId(String altasId) {
-		this.altasId = altasId;
-	}
-	public int getAltasIndex() {
-		return altasIndex;
-	}
-	public void setAltasIndex(int altasIndex) {
-		this.altasIndex = altasIndex;
-	}
-	
-	@Override
-	public String toString(){
-		StringBuilder sb = new StringBuilder();
-		sb.append("[" + altasId + "," + altasIndex + "]");
-		return sb.toString();
-	}
-	
-	public void CovertFromString(String str){
-		String[] data = str.replace("[", "").replace("]", "").replace(" ", "").split(",");
-		//System.out.println(data.length + "," + str + "," + data[0] + "," + data[1]);
-		altasId = data[0];
-		altasIndex = Integer.parseInt(data[1]);
-	}
+    private UUID tilesetId = null;
+    private int tilesetIndex = -1;
+
+    public void covertFromString(String str) {
+        String[] data = str.replace("[", "").replace("]", "").replace(" ", "").split(",");
+        tilesetId = UUID.fromString(data[0]);
+        tilesetIndex = Integer.parseInt(data[1]);
+    }
+
+    public void covertFromTile(MapLayerEntity.Tile tile) {
+        tilesetIndex = tile.getTileId();
+    }
 }
